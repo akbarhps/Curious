@@ -1,8 +1,10 @@
 package com.charuniverse.curious.di
 
+import com.charuniverse.curious.data.remote.PostRemoteDataSource
 import com.charuniverse.curious.data.remote.UserRemoteDataSource
-import com.charuniverse.curious.repository.AuthRepository
-import com.charuniverse.curious.repository.UserRepository
+import com.charuniverse.curious.data.repository.AuthRepository
+import com.charuniverse.curious.data.repository.PostRepository
+import com.charuniverse.curious.data.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
@@ -24,6 +26,10 @@ object AppModule {
     @Qualifier
     @Retention(AnnotationRetention.RUNTIME)
     annotation class RemoteUserDataSource
+
+    @Qualifier
+    @Retention(AnnotationRetention.RUNTIME)
+    annotation class RemotePostDataSource
 
     @Singleton
     @Provides
@@ -79,11 +85,30 @@ object AppModule {
     }
 
     @Singleton
+    @RemoteUserDataSource
+    @Provides
+    fun providePostRemoteDataSource(
+        firebaseFirestore: FirebaseFirestore,
+        dispatcherContext: CoroutineDispatcher
+    ): PostRemoteDataSource {
+        return PostRemoteDataSource(firebaseFirestore, dispatcherContext)
+    }
+
+    @Singleton
     @Provides
     fun provideUserRepository(
         @RemoteUserDataSource userRemoteDataSource: UserRemoteDataSource,
         dispatcherContext: CoroutineDispatcher
     ): UserRepository {
         return UserRepository(userRemoteDataSource, dispatcherContext)
+    }
+
+    @Singleton
+    @Provides
+    fun providePostRepository(
+        @RemoteUserDataSource postRemoteDataSource: PostRemoteDataSource,
+        dispatcherContext: CoroutineDispatcher
+    ): PostRepository {
+        return PostRepository(postRemoteDataSource, dispatcherContext)
     }
 }

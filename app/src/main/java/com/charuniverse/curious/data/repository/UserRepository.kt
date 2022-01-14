@@ -1,4 +1,4 @@
-package com.charuniverse.curious.repository
+package com.charuniverse.curious.data.repository
 
 import androidx.lifecycle.LiveData
 import com.charuniverse.curious.data.Result

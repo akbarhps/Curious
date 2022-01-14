@@ -8,11 +8,13 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.onNavDestinationSelected
 import com.charuniverse.curious.R
 import com.charuniverse.curious.databinding.FragmentPostCreateBinding
+import dagger.hilt.android.AndroidEntryPoint
 import io.noties.markwon.Markwon
 import io.noties.markwon.editor.MarkwonEditor
 import io.noties.markwon.editor.MarkwonEditorTextWatcher
 import java.util.concurrent.Executors
 
+@AndroidEntryPoint
 class PostCreateFragment : Fragment(R.layout.fragment_post_create) {
 
     private val viewModel: PostCreateViewModel by activityViewModels()
@@ -46,6 +48,10 @@ class PostCreateFragment : Fragment(R.layout.fragment_post_create) {
                 binding.content
             )
         )
+
+        binding.materialButton.setOnClickListener {
+            viewModel.createPost()
+        }
 
         viewModel.viewState.observe(viewLifecycleOwner, {
             binding.state = it

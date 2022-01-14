@@ -8,8 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charuniverse.curious.data.exception
 import com.charuniverse.curious.data.failed
-import com.charuniverse.curious.repository.AuthRepository
-import com.charuniverse.curious.repository.UserRepository
+import com.charuniverse.curious.data.repository.AuthRepository
+import com.charuniverse.curious.data.repository.UserRepository
 import com.charuniverse.curious.util.Event
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import dagger.hilt.android.lifecycle.HiltViewModel

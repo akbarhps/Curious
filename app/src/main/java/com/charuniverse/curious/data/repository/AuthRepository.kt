@@ -1,4 +1,4 @@
-package com.charuniverse.curious.repository
+package com.charuniverse.curious.data.repository
 
 import android.content.Context
 import android.util.Log
