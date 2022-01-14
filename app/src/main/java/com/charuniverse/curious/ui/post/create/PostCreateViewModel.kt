@@ -1,6 +1,7 @@
 package com.charuniverse.curious.ui.post.create
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,6 +10,7 @@ import com.charuniverse.curious.data.exception
 import com.charuniverse.curious.data.failed
 import com.charuniverse.curious.data.repository.AuthRepository
 import com.charuniverse.curious.data.repository.PostRepository
+import com.charuniverse.curious.util.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -23,10 +25,21 @@ class PostCreateViewModel @Inject constructor(
         private const val TAG = "PostCreateViewModel"
     }
 
+    private val _isLoading = MutableLiveData(false)
+    val isLoading: LiveData<Boolean> = _isLoading
+
+    private val _error = MutableLiveData<Event<Exception>>()
+    val error: LiveData<Event<Exception>> = _error
+
+    private val _uploadSucceed = MutableLiveData<Event<Boolean>>()
+    val uploadSucceed: LiveData<Event<Boolean>> = _uploadSucceed
+
     val title = MutableLiveData("")
     val body = MutableLiveData("")
 
     fun createPost() = viewModelScope.launch {
+        _isLoading.value = true
+
         val loginUser = authRepository.getLoginUser()
         val post = Post(
             title = title.value.toString(),
@@ -37,7 +50,16 @@ class PostCreateViewModel @Inject constructor(
         val result = postRepository.save(post)
         if (result.failed) {
             Log.e(TAG, "createPost failed: ${result.exception.message}", result.exception)
+            _error.value = Event(result.exception)
         }
+
+        if (_error.value == null) {
+            title.value = ""
+            body.value = ""
+            _uploadSucceed.value = Event(true)
+        }
+
+        _isLoading.value = false
     }
 
 }

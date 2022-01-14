@@ -25,9 +25,17 @@
     <fragment
         android:id="@+id/postFeedFragment"
         android:name="com.charuniverse.curious.ui.post.feed.PostFeedFragment"
-        android:label="Feed" />
+        android:label="Feed" >
+        <action
+            android:id="@+id/action_postFeedFragment_to_postDetailFragment"
+            app:destination="@id/postDetailFragment" />
+    </fragment>
     <fragment
         android:id="@+id/postCreatePreviewFragment"
         android:name="com.charuniverse.curious.ui.post.create.PostCreatePreviewFragment"
         android:label="Post Preview" />
+    <fragment
+        android:id="@+id/postDetailFragment"
+        android:name="com.charuniverse.curious.ui.post.detail.PostDetailFragment"
+        android:label="PostDetailFragment" />
 </navigation>

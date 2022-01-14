@@ -5,7 +5,7 @@
     <item
         android:id="@+id/postCreatePreviewFragment"
         android:icon="@drawable/ic_baseline_remove_red_eye_24"
-        android:title="Show Preview"
-        app:showAsAction="always" />
+        android:title="Preview Post"
+        app:showAsAction="always|withText" />
 
 </menu>
