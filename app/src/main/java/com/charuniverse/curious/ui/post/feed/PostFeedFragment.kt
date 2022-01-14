@@ -6,8 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.charuniverse.curious.R
 import com.charuniverse.curious.databinding.FragmentPostFeedBinding
+import com.charuniverse.curious.util.EventObserver
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -27,11 +29,15 @@ class PostFeedFragment : Fragment(R.layout.fragment_post_feed) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val adapter = PostAdapter()
+        val adapter = PostAdapter(viewModel)
         binding.postsList.adapter = adapter
 
         viewModel.posts.observe(viewLifecycleOwner, {
             adapter.submitList(it)
+        })
+        viewModel.openDetail.observe(viewLifecycleOwner, EventObserver {
+            val dest = PostFeedFragmentDirections.actionPostFeedFragmentToPostDetailFragment()
+            findNavController().navigate(dest)
         })
     }
 }

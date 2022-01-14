@@ -9,6 +9,8 @@ import com.charuniverse.curious.data.model.PostFeedResponse
 import com.charuniverse.curious.data.repository.PostRepository
 import com.charuniverse.curious.data.repository.UserRepository
 import com.charuniverse.curious.data.succeeded
+import com.charuniverse.curious.util.Constant
+import com.charuniverse.curious.util.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,6 +30,9 @@ class PostFeedViewModel @Inject constructor(
 
     private val cachedUser = mutableMapOf<String, User>()
 
+    private val _openDetail = MutableLiveData<Event<Boolean>>()
+    val openDetail: LiveData<Event<Boolean>> = _openDetail
+
     init {
         viewModelScope.launch {
             postRepository.refreshPost()
@@ -36,6 +41,11 @@ class PostFeedViewModel @Inject constructor(
 
     fun refresh() = viewModelScope.launch {
         postRepository.refreshPost()
+    }
+
+    fun openPost(postId: String) {
+        Constant.post = _posts.value!!.first { it.id == postId }
+        _openDetail.value = Event(true)
     }
 
     private fun filterPost(postsResult: Result<List<Post>>): LiveData<List<PostFeedResponse>> {

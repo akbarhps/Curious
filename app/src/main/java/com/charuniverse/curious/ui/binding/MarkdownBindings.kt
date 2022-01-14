@@ -1,4 +1,4 @@
-package com.charuniverse.curious.ui.post.create
+package com.charuniverse.curious.ui.binding
 
 import android.content.Intent
 import android.net.Uri
@@ -58,7 +58,8 @@ fun renderMarkdown(textView: TextView, content: String?) {
         .usePlugin(HtmlPlugin.create())
         .usePlugin(TaskListPlugin.create(textView.context))
         .usePlugin(GlideImagesPlugin.create(textView.context))
-        .usePlugin(customPlugin).build()
+        .usePlugin(customPlugin)
+        .build()
 
     markwon.setMarkdown(textView, content)
 }
@@ -68,13 +69,13 @@ private val customPlugin = object : AbstractMarkwonPlugin() {
         builder.headingBreakHeight(0)
     }
 
-    override fun configureSpansFactory(builder: MarkwonSpansFactory.Builder) {
-        builder.appendFactory(Image::class.java) { config, props ->
-            val url = ImageProps.DESTINATION.require(props)
-            LinkSpan(config.theme(), url, ImageLinkResolver(config.linkResolver()))
+//    override fun configureSpansFactory(builder: MarkwonSpansFactory.Builder) {
+//        builder.appendFactory(Image::class.java) { config, props ->
+//            val url = ImageProps.DESTINATION.require(props)
+//            LinkSpan(config.theme(), url, ImageLinkResolver(config.linkResolver()))
 //                LinkSpan(config.theme(), url, config.linkResolver())
-        }
-    }
+//        }
+//    }
 }
 
 private class ImageLinkResolver(private val defaultResolver: LinkResolver) : LinkResolver {

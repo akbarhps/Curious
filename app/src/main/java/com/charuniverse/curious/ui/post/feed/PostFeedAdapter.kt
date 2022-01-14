@@ -8,11 +8,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.charuniverse.curious.data.model.PostFeedResponse
 import com.charuniverse.curious.databinding.ViewPostFeedItemBinding
 
-class PostAdapter : ListAdapter<PostFeedResponse, PostAdapter.ViewHolder>(TaskDiffCallback()) {
+class PostAdapter(private val viewModel: PostFeedViewModel) :
+    ListAdapter<PostFeedResponse, PostAdapter.ViewHolder>(TaskDiffCallback()) {
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
-        holder.bind(item)
+        holder.bind(viewModel, item)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -30,8 +31,9 @@ class PostAdapter : ListAdapter<PostFeedResponse, PostAdapter.ViewHolder>(TaskDi
             }
         }
 
-        fun bind(item: PostFeedResponse) {
+        fun bind(viewModel: PostFeedViewModel, item: PostFeedResponse) {
             binding.post = item
+            binding.viewModel = viewModel
             binding.executePendingBindings()
         }
     }
