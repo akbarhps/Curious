@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "195416267957",
+    "firebase_url": "https://curious-app-ec3cc-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "curious-app-ec3cc",
+    "storage_bucket": "curious-app-ec3cc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:195416267957:android:6946fb921f31db1ac6f2fc",
+        "android_client_info": {
+          "package_name": "com.charuniverse.curious"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "195416267957-249pikqi6i9qqnk5bsgrem56ul51jgue.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.charuniverse.curious",
+            "certificate_hash": "08117e2065fcad5a1ab796bfa274896a42d4c0c8"
+          }
+        },
+        {
+          "client_id": "195416267957-efa1n0ar23i51muhd8c8pa11emk18q7j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKwQ-oGI79e8xkrMvmwZFyFKbDqY1_HHY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "195416267957-efa1n0ar23i51muhd8c8pa11emk18q7j.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
