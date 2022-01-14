@@ -16,9 +16,6 @@ class PostCreatePreviewFragment : Fragment(R.layout.fragment_post_create_preview
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentPostCreatePreviewBinding.bind(view)
-
-        viewModel.viewState.observe(viewLifecycleOwner, {
-            binding.state = it
-        })
+        binding.viewModel = viewModel
     }
 }

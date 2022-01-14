@@ -1,7 +1,6 @@
 package com.charuniverse.curious.ui.post.create
 
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -24,19 +23,14 @@ class PostCreateViewModel @Inject constructor(
         private const val TAG = "PostCreateViewModel"
     }
 
-    private val _viewState = MutableLiveData(PostCreateViewState())
-    val viewState: LiveData<PostCreateViewState> = _viewState
-
-    fun update(title: String, content: String) {
-        _viewState.value = PostCreateViewState(title, content)
-    }
+    val title = MutableLiveData("")
+    val body = MutableLiveData("")
 
     fun createPost() = viewModelScope.launch {
         val loginUser = authRepository.getLoginUser()
-        val state = _viewState.value!!
         val post = Post(
-            title = state.title,
-            body = state.content,
+            title = title.value.toString(),
+            body = body.value.toString(),
             createdBy = loginUser!!.id,
         )
 

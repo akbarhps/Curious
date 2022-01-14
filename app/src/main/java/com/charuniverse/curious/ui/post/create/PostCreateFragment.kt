@@ -25,6 +25,7 @@ class PostCreateFragment : Fragment(R.layout.fragment_post_create) {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentPostCreateBinding.inflate(inflater, container, false)
+        binding.viewModel = viewModel
         setHasOptionsMenu(true)
         return binding.root
     }
@@ -50,17 +51,7 @@ class PostCreateFragment : Fragment(R.layout.fragment_post_create) {
         )
 
         binding.materialButton.setOnClickListener {
-            viewModel.update(binding.title.text.toString(), binding.content.text.toString())
             viewModel.createPost()
         }
-
-        viewModel.viewState.observe(viewLifecycleOwner, {
-            binding.state = it
-        })
-    }
-
-    override fun onPause() {
-        viewModel.update(binding.title.text.toString(), binding.content.text.toString())
-        super.onPause()
     }
 }
