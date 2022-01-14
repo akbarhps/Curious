@@ -35,6 +35,12 @@ class LoginViewModel @Inject constructor(
     private val _loginSuccess = MutableLiveData<Event<Unit>>()
     val loginSuccess: LiveData<Event<Unit>> = _loginSuccess
 
+    init {
+        if (authRepository.getLoginUser() != null) {
+            _loginSuccess.value = Event(Unit)
+        }
+    }
+
     fun buildGoogleSignInClient(context: Context): GoogleSignInClient {
         return authRepository.buildGoogleSignInClient(context)
     }

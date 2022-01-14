@@ -19,10 +19,15 @@
         <action
             android:id="@+id/action_loginFragment_to_postFeedFragment"
             app:destination="@id/postFeedFragment"
-            app:popUpToInclusive="false" />
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/postFeedFragment"
         android:name="com.charuniverse.curious.ui.post.feed.PostFeedFragment"
         android:label="Feed" />
+    <fragment
+        android:id="@+id/postCreatePreviewFragment"
+        android:name="com.charuniverse.curious.ui.post.create.PostCreatePreviewFragment"
+        android:label="Post Preview" />
 </navigation>

@@ -1,18 +1,59 @@
 package com.charuniverse.curious.ui.post.create
 
 import android.os.Bundle
-import android.view.View
+import android.view.*
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.onNavDestinationSelected
 import com.charuniverse.curious.R
 import com.charuniverse.curious.databinding.FragmentPostCreateBinding
+import io.noties.markwon.Markwon
+import io.noties.markwon.editor.MarkwonEditor
+import io.noties.markwon.editor.MarkwonEditorTextWatcher
+import java.util.concurrent.Executors
 
 class PostCreateFragment : Fragment(R.layout.fragment_post_create) {
 
+    private val viewModel: PostCreateViewModel by activityViewModels()
+
     private lateinit var binding: FragmentPostCreateBinding
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentPostCreateBinding.inflate(inflater, container, false)
+        setHasOptionsMenu(true)
+        return binding.root
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val navController = findNavController()
+        return item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.post_create_menu, menu)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding = FragmentPostCreateBinding.bind(view)
 
+        binding.content.addTextChangedListener(
+            MarkwonEditorTextWatcher.withPreRender(
+                MarkwonEditor.create(Markwon.create(requireContext())),
+                Executors.newCachedThreadPool(),
+                binding.content
+            )
+        )
+
+        viewModel.viewState.observe(viewLifecycleOwner, {
+            binding.state = it
+        })
+    }
+
+    override fun onPause() {
+        viewModel.update(binding.title.text.toString(), binding.content.text.toString())
+        super.onPause()
     }
 }

@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.Result.*
-import com.charuniverse.curious.model.User
+import com.charuniverse.curious.data.entity.User
 import com.google.firebase.database.*
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers

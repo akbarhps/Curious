@@ -35,13 +35,14 @@ class MainActivity : AppCompatActivity() {
 
     private val hideBottomNavOnFragment = listOf(
         R.id.loginFragment,
-        R.id.postCreateFragment
+        R.id.postCreateFragment,
+        R.id.postCreatePreviewFragment
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-        delegate.applyDayNight()
+//        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+//        delegate.applyDayNight()
 
         Dialogs.let {
             it.dialogProgressBar = ProgressBarDialog(this)

@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.Result.*
-import com.charuniverse.curious.model.Post
+import com.charuniverse.curious.data.entity.Post
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers

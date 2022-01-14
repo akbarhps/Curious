@@ -1,4 +1,4 @@
-package com.charuniverse.curious.model
+package com.charuniverse.curious.data.entity
 
 data class User(
     var id: String = "",
