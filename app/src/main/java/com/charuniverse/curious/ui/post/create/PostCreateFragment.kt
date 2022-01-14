@@ -50,6 +50,7 @@ class PostCreateFragment : Fragment(R.layout.fragment_post_create) {
         )
 
         binding.materialButton.setOnClickListener {
+            viewModel.update(binding.title.text.toString(), binding.content.text.toString())
             viewModel.createPost()
         }
 

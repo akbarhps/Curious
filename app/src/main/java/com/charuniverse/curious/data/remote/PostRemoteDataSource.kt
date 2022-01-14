@@ -21,7 +21,7 @@ class PostRemoteDataSource(
 
     private val observablePosts = MutableLiveData<Result<List<Post>>>()
 
-    suspend fun refreshPosts() {
+    suspend fun refreshPosts() = withContext(Dispatchers.Main) {
         observablePosts.value = findAll()!!
     }
 
@@ -47,6 +47,7 @@ class PostRemoteDataSource(
     suspend fun findAll(): Result<List<Post>> = withContext(dispatcherContext) {
         return@withContext try {
             val docs = postRef.get().await()
+
             Success(docs.toObjects(Post::class.java))
         } catch (e: Exception) {
             Error(e)
@@ -69,6 +70,7 @@ class PostRemoteDataSource(
     suspend fun save(post: Post): Result<Unit> = withContext(dispatcherContext) {
         return@withContext try {
             postRef.document(post.id).set(post).await()
+
             Success(Unit)
         } catch (e: Exception) {
             Error(e)
@@ -78,6 +80,7 @@ class PostRemoteDataSource(
     suspend fun delete(postId: String): Result<Unit> = withContext(dispatcherContext) {
         return@withContext try {
             postRef.document(postId).delete().await()
+
             Success(Unit)
         } catch (e: Exception) {
             Error(e)
