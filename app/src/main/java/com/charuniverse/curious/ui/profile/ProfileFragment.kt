@@ -2,10 +2,14 @@ package com.charuniverse.curious.ui.profile
 
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.charuniverse.curious.R
 import com.charuniverse.curious.databinding.FragmentProfileBinding
+import com.charuniverse.curious.ui.dialog.Dialogs
+import com.charuniverse.curious.util.EventObserver
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -19,8 +23,22 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentProfileBinding.bind(view)
 
+        binding.logOut.setOnClickListener {
+            viewModel.logOut(requireContext())
+        }
+
         viewModel.viewState.observe(viewLifecycleOwner, {
             binding.viewState = it
+        })
+        viewModel.isLoading.observe(viewLifecycleOwner, {
+            Dialogs.toggleProgressBar(it)
+        })
+        viewModel.errorMessage.observe(viewLifecycleOwner, EventObserver {
+            Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+        })
+        viewModel.isLoggedOut.observe(viewLifecycleOwner, EventObserver {
+            val dest = ProfileFragmentDirections.actionProfileFragmentToLoginFragment()
+            findNavController().navigate(dest)
         })
     }
 }

@@ -5,9 +5,13 @@
 
     <data>
 
-        <import type="android.text.InputType" />
+        <import type="com.charuniverse.curious.ui.profile.ProfileViewModel" />
 
         <import type="com.charuniverse.curious.ui.profile.ProfileViewState" />
+
+        <variable
+            name="viewModel"
+            type="ProfileViewModel" />
 
         <variable
             name="viewState"
@@ -42,10 +46,11 @@
             android:layout_marginTop="4dp"
             android:text="@{`@` + viewState.user.username}" />
 
-        <androidx.recyclerview.widget.RecyclerView
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/logOut"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+            android:text="Log Out" />
 
     </LinearLayout>
 
