@@ -12,7 +12,6 @@ import com.charuniverse.curious.data.repository.AuthRepository
 import com.charuniverse.curious.data.repository.PostRepository
 import com.charuniverse.curious.util.Event
 import com.charuniverse.curious.util.Markdown
-import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -51,8 +50,8 @@ class PostCreateViewModel @Inject constructor(
 
         val loginUser = authRepository.getLoginUser()
         val post = Post(
-            title = title.value.toString(),
-            body = body.value.toString(),
+            title = title.value.toString().trim().replace('\n', ' '),
+            body = body.value.toString().trim(),
             createdBy = loginUser!!.id,
         )
 

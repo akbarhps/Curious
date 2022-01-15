@@ -7,8 +7,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.onNavDestinationSelected
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.charuniverse.curious.R
 import com.charuniverse.curious.databinding.FragmentPostCreateBinding
 import com.charuniverse.curious.ui.dialog.Dialogs
@@ -46,12 +44,8 @@ class PostCreateFragment : Fragment(R.layout.fragment_post_create) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.helper.apply {
-            layoutManager = LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
-
-            adapter = PostCreateHelperAdapter(viewModel)
-                .also { it.submitList(Markdown.elements) }
-        }
+        binding.helper.adapter = PostCreateHelperAdapter(viewModel)
+            .also { it.submitList(Markdown.elements) }
 
         binding.body.setOnFocusChangeListener { _, isFocus ->
             binding.helper.visibility = if (isFocus) View.VISIBLE else View.GONE
