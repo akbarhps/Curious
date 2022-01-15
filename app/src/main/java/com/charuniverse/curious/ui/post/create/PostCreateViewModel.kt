@@ -11,6 +11,8 @@ import com.charuniverse.curious.data.failed
 import com.charuniverse.curious.data.repository.AuthRepository
 import com.charuniverse.curious.data.repository.PostRepository
 import com.charuniverse.curious.util.Event
+import com.charuniverse.curious.util.Markdown
+import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -36,6 +38,13 @@ class PostCreateViewModel @Inject constructor(
 
     val title = MutableLiveData("")
     val body = MutableLiveData("")
+
+    private val _helperEvent = MutableLiveData<Event<Markdown.Element>>()
+    val helperEvent: LiveData<Event<Markdown.Element>> = _helperEvent
+
+    fun helperListener(element: Markdown.Element) {
+        _helperEvent.value = Event(element)
+    }
 
     fun createPost() = viewModelScope.launch {
         _isLoading.value = true

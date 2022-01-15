@@ -10,19 +10,20 @@ import com.google.android.material.textfield.TextInputEditText
 import io.noties.markwon.AbstractMarkwonPlugin
 import io.noties.markwon.LinkResolver
 import io.noties.markwon.Markwon
-import io.noties.markwon.MarkwonSpansFactory
 import io.noties.markwon.core.MarkwonTheme
-import io.noties.markwon.core.spans.LinkSpan
 import io.noties.markwon.editor.MarkwonEditor
 import io.noties.markwon.editor.MarkwonEditorTextWatcher
+import io.noties.markwon.ext.latex.JLatexMathPlugin
+import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
+import io.noties.markwon.ext.tables.TablePlugin
 import io.noties.markwon.ext.tasklist.TaskListPlugin
 import io.noties.markwon.html.HtmlPlugin
-import io.noties.markwon.image.ImageProps
 import io.noties.markwon.image.glide.GlideImagesPlugin
+import io.noties.markwon.inlineparser.MarkwonInlineParserPlugin
 import io.noties.markwon.linkify.LinkifyPlugin
-import org.commonmark.node.Image
 import java.net.URLConnection
 import java.util.concurrent.Executors
+
 
 @BindingAdapter("app:highlightMarkdown")
 fun highlightMarkdownTextInputEditText(
@@ -53,15 +54,19 @@ fun highlightMarkdownEditText(
 @BindingAdapter("app:renderMarkdown")
 fun renderMarkdown(textView: TextView, content: String?) {
     if (content == null) return
-    val markwon = Markwon.builder(textView.context)
-        .usePlugin(LinkifyPlugin.create())
-        .usePlugin(HtmlPlugin.create())
-        .usePlugin(TaskListPlugin.create(textView.context))
+
+    Markwon.builder(textView.context)
         .usePlugin(GlideImagesPlugin.create(textView.context))
+        .usePlugin(HtmlPlugin.create())
+        .usePlugin(LinkifyPlugin.create())
+        .usePlugin(StrikethroughPlugin.create())
+        .usePlugin(TaskListPlugin.create(textView.context))
+        .usePlugin(TablePlugin.create(textView.context))
+        .usePlugin(MarkwonInlineParserPlugin.create())
+        .usePlugin(JLatexMathPlugin.create(textView.textSize) { it.inlinesEnabled(true) })
         .usePlugin(customPlugin)
         .build()
-
-    markwon.setMarkdown(textView, content)
+        .setMarkdown(textView, content)
 }
 
 private val customPlugin = object : AbstractMarkwonPlugin() {

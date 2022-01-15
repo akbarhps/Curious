@@ -32,7 +32,7 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:loadUrl="@{post.author.profilePictureURL}" />
+                    app:loadCircular="@{post.author.profilePictureURL}" />
 
                 <TextView
                     android:id="@+id/textView4"
