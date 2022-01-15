@@ -3,7 +3,7 @@ package com.charuniverse.curious.data.repository
 import androidx.lifecycle.LiveData
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.entity.Post
-import com.charuniverse.curious.data.remote.PostRemoteDataSource
+import com.charuniverse.curious.data.source.remote.PostRemoteDataSource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

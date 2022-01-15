@@ -4,11 +4,13 @@
 
     <data>
 
-        <import type="com.charuniverse.curious.data.model.PostFeedResponse" />
+        <import type="com.charuniverse.curious.ui.post.detail.PostDetailViewModel" />
+
+        <import type="android.view.View" />
 
         <variable
-            name="post"
-            type="PostFeedResponse" />
+            name="viewModel"
+            type="PostDetailViewModel" />
     </data>
 
     <androidx.core.widget.NestedScrollView
@@ -18,12 +20,12 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:orientation="vertical">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="32dp">
+                android:layout_height="wrap_content"
+                android:padding="16dp">
 
                 <ImageView
                     android:id="@+id/imageView2"
@@ -32,7 +34,7 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:loadCircular="@{post.author.profilePictureURL}" />
+                    app:loadCircular="@{viewModel.post.author.profilePictureURL}" />
 
                 <TextView
                     android:id="@+id/textView4"
@@ -40,7 +42,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
-                    android:text="@{post.author.username}"
+                    android:text="@{viewModel.post.author.username}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@+id/textView5"
                     app:layout_constraintStart_toEndOf="@+id/imageView2"
@@ -53,29 +55,30 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:timestamp="@{post.createdAt}" />
+                    app:timestamp="@{viewModel.post.createdAt}" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@{post.title}"
+                android:padding="16dp"
+                android:text="@{viewModel.post.title}"
                 android:textSize="18sp" />
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:layout_marginTop="12dp"
+                android:visibility="@{viewModel.post == null ? View.GONE : View.VISIBLE}"
                 android:background="#C8C8C8" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
                 android:nestedScrollingEnabled="false"
-                app:renderMarkdown="@{post.body}" />
+                android:padding="16dp"
+                android:textSize="16sp"
+                app:renderMarkdown="@{viewModel.post.content}" />
 
         </LinearLayout>
 

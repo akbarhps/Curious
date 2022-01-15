@@ -1,4 +1,4 @@
-package com.charuniverse.curious.ui.post.create
+package com.charuniverse.curious.ui.post.create_edit
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -8,12 +8,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.charuniverse.curious.databinding.ViewPostCreateHelperItemBinding
 import com.charuniverse.curious.util.Markdown
 
-class PostCreateHelperAdapter(private val viewModel: PostCreateViewModel) :
-    ListAdapter<Markdown.Element, PostCreateHelperAdapter.ViewHolder>(TaskDiffCallback()) {
+class MarkdownTagAdapter(private val editViewModel: PostCreateEditViewModel) :
+    ListAdapter<Markdown.Element, MarkdownTagAdapter.ViewHolder>(TaskDiffCallback()) {
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
-        holder.bind(viewModel, item)
+        holder.bind(editViewModel, item)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -31,9 +31,9 @@ class PostCreateHelperAdapter(private val viewModel: PostCreateViewModel) :
             }
         }
 
-        fun bind(viewModel: PostCreateViewModel, item: Markdown.Element) {
+        fun bind(editViewModel: PostCreateEditViewModel, item: Markdown.Element) {
             binding.element = item
-            binding.viewModel = viewModel
+            binding.viewModel = editViewModel
             binding.executePendingBindings()
         }
     }

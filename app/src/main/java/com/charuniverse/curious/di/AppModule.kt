@@ -1,10 +1,12 @@
 package com.charuniverse.curious.di
 
-import com.charuniverse.curious.data.remote.PostRemoteDataSource
-import com.charuniverse.curious.data.remote.UserRemoteDataSource
 import com.charuniverse.curious.data.repository.AuthRepository
+import com.charuniverse.curious.data.repository.PostDetailRepository
 import com.charuniverse.curious.data.repository.PostRepository
 import com.charuniverse.curious.data.repository.UserRepository
+import com.charuniverse.curious.data.source.remote.PostDetailRemoteDataSource
+import com.charuniverse.curious.data.source.remote.PostRemoteDataSource
+import com.charuniverse.curious.data.source.remote.UserRemoteDataSource
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
@@ -30,6 +32,10 @@ object AppModule {
     @Qualifier
     @Retention(AnnotationRetention.RUNTIME)
     annotation class RemotePostDataSource
+
+    @Qualifier
+    @Retention(AnnotationRetention.RUNTIME)
+    annotation class RemotePostDetailDataSource
 
     @Singleton
     @Provides
@@ -85,13 +91,23 @@ object AppModule {
     }
 
     @Singleton
-    @RemoteUserDataSource
+    @RemotePostDataSource
     @Provides
     fun providePostRemoteDataSource(
-        firebaseFirestore: FirebaseFirestore,
+        firebaseDatabase: FirebaseDatabase,
         dispatcherContext: CoroutineDispatcher
     ): PostRemoteDataSource {
-        return PostRemoteDataSource(firebaseFirestore, dispatcherContext)
+        return PostRemoteDataSource(firebaseDatabase, dispatcherContext)
+    }
+
+    @Singleton
+    @RemotePostDetailDataSource
+    @Provides
+    fun providePostDetailDataSource(
+        firebaseDatabase: FirebaseDatabase,
+        dispatcherContext: CoroutineDispatcher
+    ): PostDetailRemoteDataSource {
+        return PostDetailRemoteDataSource(firebaseDatabase, dispatcherContext)
     }
 
     @Singleton
@@ -106,9 +122,18 @@ object AppModule {
     @Singleton
     @Provides
     fun providePostRepository(
-        @RemoteUserDataSource postRemoteDataSource: PostRemoteDataSource,
+        @RemotePostDataSource postRemoteDataSource: PostRemoteDataSource,
         dispatcherContext: CoroutineDispatcher
     ): PostRepository {
         return PostRepository(postRemoteDataSource, dispatcherContext)
+    }
+
+    @Singleton
+    @Provides
+    fun providePostDetailRepository(
+        @RemotePostDetailDataSource remoteDataSource: PostDetailRemoteDataSource,
+        dispatcherContext: CoroutineDispatcher
+    ): PostDetailRepository {
+        return PostDetailRepository(remoteDataSource, dispatcherContext)
     }
 }

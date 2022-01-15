@@ -7,7 +7,7 @@
         android:title="Feed" />
 
     <item
-        android:id="@+id/postCreateFragment"
+        android:id="@+id/postCreateEditFragment"
         android:icon="@drawable/ic_baseline_add_24"
         android:title="Create" />
 

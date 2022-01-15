@@ -11,6 +11,7 @@ import com.charuniverse.curious.data.failed
 import com.charuniverse.curious.data.repository.AuthRepository
 import com.charuniverse.curious.data.repository.UserRepository
 import com.charuniverse.curious.util.Event
+import com.charuniverse.curious.util.Preferences
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -65,6 +66,7 @@ class LoginViewModel @Inject constructor(
             return@launch
         }
 
+        Preferences.userId = loginUser.id
         _loading.value = false
         _loginSuccess.value = Event(Unit)
     }

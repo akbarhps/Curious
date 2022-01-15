@@ -5,7 +5,6 @@ import android.widget.ImageView
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.charuniverse.curious.R
-import java.net.URI
 
 @BindingAdapter("app:load")
 fun imageViewLoadUrl(imageView: ImageView, url: String?) {

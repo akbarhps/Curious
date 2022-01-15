@@ -5,11 +5,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.charuniverse.curious.data.model.PostFeedResponse
+import com.charuniverse.curious.data.model.PostDetail
 import com.charuniverse.curious.databinding.ViewPostFeedItemBinding
+import com.charuniverse.curious.ui.post.PostViewModel
 
-class PostAdapter(private val viewModel: PostFeedViewModel) :
-    ListAdapter<PostFeedResponse, PostAdapter.ViewHolder>(TaskDiffCallback()) {
+class PostAdapter(private val viewModel: PostViewModel) :
+    ListAdapter<PostDetail, PostAdapter.ViewHolder>(TaskDiffCallback()) {
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
@@ -31,7 +32,7 @@ class PostAdapter(private val viewModel: PostFeedViewModel) :
             }
         }
 
-        fun bind(viewModel: PostFeedViewModel, item: PostFeedResponse) {
+        fun bind(viewModel: PostViewModel, item: PostDetail) {
             binding.post = item
             binding.viewModel = viewModel
             binding.executePendingBindings()
@@ -39,12 +40,12 @@ class PostAdapter(private val viewModel: PostFeedViewModel) :
     }
 }
 
-class TaskDiffCallback : DiffUtil.ItemCallback<PostFeedResponse>() {
-    override fun areItemsTheSame(oldItem: PostFeedResponse, newItem: PostFeedResponse): Boolean {
+class TaskDiffCallback : DiffUtil.ItemCallback<PostDetail>() {
+    override fun areItemsTheSame(oldItem: PostDetail, newItem: PostDetail): Boolean {
         return oldItem.id == newItem.id
     }
 
-    override fun areContentsTheSame(oldItem: PostFeedResponse, newItem: PostFeedResponse): Boolean {
+    override fun areContentsTheSame(oldItem: PostDetail, newItem: PostDetail): Boolean {
         return oldItem == newItem
     }
 }

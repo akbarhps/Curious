@@ -9,9 +9,15 @@
         android:name="com.charuniverse.curious.ui.profile.ProfileFragment"
         android:label="Profile" />
     <fragment
-        android:id="@+id/postCreateFragment"
-        android:name="com.charuniverse.curious.ui.post.create.PostCreateFragment"
-        android:label="Create Post" />
+        android:id="@+id/postCreateEditFragment"
+        android:name="com.charuniverse.curious.ui.post.create_edit.PostCreateEditFragment"
+        android:label="Create Post" >
+        <argument
+            android:name="postId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+    </fragment>
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.charuniverse.curious.ui.login.LoginFragment"
@@ -32,10 +38,21 @@
     </fragment>
     <fragment
         android:id="@+id/postCreatePreviewFragment"
-        android:name="com.charuniverse.curious.ui.post.create.PostCreatePreviewFragment"
-        android:label="Post Preview" />
+        android:name="com.charuniverse.curious.ui.post.create_edit.PostCreateEditPreviewFragment"
+        android:label="Post Preview" >
+        <argument
+            android:name="postId"
+            app:argType="string" />
+    </fragment>
     <fragment
         android:id="@+id/postDetailFragment"
         android:name="com.charuniverse.curious.ui.post.detail.PostDetailFragment"
-        android:label="PostDetailFragment" />
+        android:label="PostDetailFragment" >
+        <argument
+            android:name="postId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_postDetailFragment_to_postCreateEditFragment"
+            app:destination="@id/postCreateEditFragment" />
+    </fragment>
 </navigation>

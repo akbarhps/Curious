@@ -1,4 +1,4 @@
-package com.charuniverse.curious.data.remote
+package com.charuniverse.curious.data.source.remote
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

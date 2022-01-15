@@ -6,11 +6,11 @@
 
         <import type="com.charuniverse.curious.util.Markdown.Element" />
 
-        <import type="com.charuniverse.curious.ui.post.create.PostCreateViewModel" />
+        <import type="com.charuniverse.curious.ui.post.create_edit.PostCreateEditViewModel" />
 
         <variable
             name="viewModel"
-            type="PostCreateViewModel" />
+            type="PostCreateEditViewModel" />
 
         <variable
             name="element"
@@ -21,7 +21,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:onClick="@{() -> viewModel.helperListener(element)}"
+        android:onClick="@{() -> viewModel.markdownTagHandler(element)}"
         android:paddingStart="2dp"
         android:paddingEnd="2dp">
 

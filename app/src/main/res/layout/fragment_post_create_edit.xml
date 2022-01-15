@@ -5,17 +5,17 @@
 
     <data>
 
-        <import type="com.charuniverse.curious.ui.post.create.PostCreateViewModel" />
+        <import type="com.charuniverse.curious.ui.post.create_edit.PostCreateEditViewModel" />
 
         <variable
             name="viewModel"
-            type="PostCreateViewModel" />
+            type="PostCreateEditViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.post.create.PostCreateFragment">
+        tools:context=".ui.post.create_edit.PostCreateEditFragment">
 
         <ScrollView
             android:layout_width="match_parent"
@@ -29,13 +29,14 @@
                 android:orientation="vertical">
 
                 <EditText
+                    android:id="@+id/title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@null"
                     android:hint="What's on your thought?"
                     android:inputType="textMultiLine"
                     android:padding="16dp"
-                    android:text="@={viewModel.title}"
+                    android:text="@={viewModel.inputTitle}"
                     android:textSize="18sp" />
 
                 <View
@@ -45,7 +46,7 @@
                     app:layout_constraintBottom_toTopOf="@+id/helper" />
 
                 <EditText
-                    android:id="@+id/body"
+                    android:id="@+id/content"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@null"
@@ -53,27 +54,13 @@
                     android:hint="Tell more about it (Markdown Supported!)"
                     android:inputType="textMultiLine"
                     android:padding="16dp"
-                    android:text="@={viewModel.body}"
+                    android:text="@={viewModel.inputContent}"
                     android:textSize="16sp"
                     app:highlightMarkdown="@{true}" />
 
             </LinearLayout>
 
         </ScrollView>
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/upload"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:contentDescription="Upload Post"
-            android:onClick="@{() -> viewModel.createPost()}"
-            android:src="@drawable/ic_baseline_send_24"
-            android:tooltipText="Upload Post"
-            android:visibility="gone"
-            app:backgroundTint="@color/white"
-            app:layout_constraintBottom_toTopOf="@+id/helper"
-            app:layout_constraintEnd_toEndOf="parent" />
 
         <View
             android:id="@+id/view2"
@@ -88,7 +75,6 @@
             android:layout_height="wrap_content"
             android:elevation="8dp"
             android:orientation="horizontal"
-            android:overScrollMode="never"
             android:visibility="gone"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"

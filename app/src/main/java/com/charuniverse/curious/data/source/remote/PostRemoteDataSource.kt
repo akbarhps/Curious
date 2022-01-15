@@ -1,4 +1,4 @@
-package com.charuniverse.curious.data.remote
+package com.charuniverse.curious.data.source.remote
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -6,18 +6,18 @@ import androidx.lifecycle.map
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.Result.*
 import com.charuniverse.curious.data.entity.Post
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 
 class PostRemoteDataSource(
-    firebaseFirestore: FirebaseFirestore,
+    firebaseDatabase: FirebaseDatabase,
     private val dispatcherContext: CoroutineDispatcher = Dispatchers.IO,
 ) {
 
-    private val postRef = firebaseFirestore.collection("posts")
+    private val postRef = firebaseDatabase.reference.child("posts")
 
     private val observablePosts = MutableLiveData<Result<List<Post>>>()
 
@@ -35,7 +35,7 @@ class PostRemoteDataSource(
                 is Loading -> Loading
                 is Error -> Error(posts.exception)
                 is Success -> {
-                    val post = posts.data.firstOrNull() { it.id == postId }
+                    val post = posts.data.firstOrNull { it.id == postId }
                         ?: return@map Error(IllegalArgumentException("Post not found"))
 
                     Success(post)
@@ -44,23 +44,32 @@ class PostRemoteDataSource(
         }
     }
 
-    suspend fun findAll(): Result<List<Post>> = withContext(dispatcherContext) {
+    suspend fun findByUserId(userId: String): Result<List<Post>> = withContext(dispatcherContext) {
         return@withContext try {
-            val docs = postRef.get().await()
-
-            Success(docs.toObjects(Post::class.java))
+            val docs = postRef.orderByChild("createdBy")
+                .equalTo(userId)
+                .get().await()
+            Success(docs.children.map { it.getValue(Post::class.java)!! })
         } catch (e: Exception) {
             Error(e)
         }
     }
 
-    suspend fun findById(id: String): Result<Post> = withContext(dispatcherContext) {
+    suspend fun findAll(): Result<List<Post>> = withContext(dispatcherContext) {
         return@withContext try {
-            val doc = postRef.document(id).get().await()
+            val docs = postRef.orderByChild("createdAt")
+                .get().await()
+            Success(docs.children.map { it.getValue(Post::class.java)!! })
+        } catch (e: Exception) {
+            Error(e)
+        }
+    }
 
-            val post = doc.toObject(Post::class.java)
+    suspend fun findById(postId: String): Result<Post> = withContext(dispatcherContext) {
+        return@withContext try {
+            val doc = postRef.child(postId).get().await()
+            val post = doc.getValue(Post::class.java)
                 ?: throw IllegalArgumentException("Post not found")
-
             Success(post)
         } catch (e: Exception) {
             Error(e)
@@ -69,8 +78,7 @@ class PostRemoteDataSource(
 
     suspend fun save(post: Post): Result<Unit> = withContext(dispatcherContext) {
         return@withContext try {
-            postRef.document(post.id).set(post).await()
-
+            postRef.child(post.id).setValue(post).await()
             Success(Unit)
         } catch (e: Exception) {
             Error(e)
@@ -79,8 +87,7 @@ class PostRemoteDataSource(
 
     suspend fun delete(postId: String): Result<Unit> = withContext(dispatcherContext) {
         return@withContext try {
-            postRef.document(postId).delete().await()
-
+            postRef.child(postId).setValue(null).await()
             Success(Unit)
         } catch (e: Exception) {
             Error(e)

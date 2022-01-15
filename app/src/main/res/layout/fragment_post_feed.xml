@@ -5,11 +5,11 @@
 
     <data>
 
-        <import type="com.charuniverse.curious.ui.post.feed.PostFeedViewModel" />
+        <import type="com.charuniverse.curious.ui.post.PostViewModel" />
 
         <variable
-            name="viewModel"
-            type="PostFeedViewModel" />
+            name="postViewModel"
+            type="PostViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -17,20 +17,19 @@
         android:layout_height="match_parent"
         tools:context=".ui.post.feed.PostFeedFragment">
 
-        <com.charuniverse.curious.util.PullToRefreshLayout
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:refreshing="@{viewModel.isLoading}"
-            app:onRefreshListener="@{() -> viewModel.refresh()}">
+            app:onRefreshListener="@{() -> postViewModel.refreshData()}"
+            app:refreshing="@{postViewModel.isLoading}">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/postsList"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                app:setPostFeedResponse="@{viewModel.posts}" />
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-        </com.charuniverse.curious.util.PullToRefreshLayout>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

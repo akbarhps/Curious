@@ -4,11 +4,11 @@
 
     <data>
 
-        <import type="com.charuniverse.curious.ui.post.create.PostCreateViewModel" />
+        <import type="com.charuniverse.curious.ui.post.create_edit.PostCreateEditViewModel" />
 
         <variable
             name="viewModel"
-            type="PostCreateViewModel" />
+            type="PostCreateEditViewModel" />
     </data>
 
     <ScrollView
@@ -24,7 +24,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="16dp"
-                android:text="@{viewModel.title.trim().replace('\n', ' ')}"
+                android:text="@{viewModel.inputTitle.trim().replace('\n', ' ')}"
                 android:textSize="18sp" />
 
             <View
@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:padding="16dp"
                 android:textSize="16sp"
-                app:renderMarkdown="@{viewModel.body.trim().replace(`\n`, `  \n`)}" />
+                app:renderMarkdown="@{viewModel.inputContent.trim().replace(`\n`, `  \n`)}" />
 
         </LinearLayout>
 

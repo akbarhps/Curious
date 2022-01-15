@@ -1,7 +1,6 @@
 package com.charuniverse.curious.data.repository
 
 import android.content.Context
-import android.util.Log
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.entity.User
 import com.charuniverse.curious.util.Constant
@@ -59,7 +58,6 @@ class AuthRepository(
             buildGoogleSignInClient(context).signOut().await()
             firebaseAuth.signOut()
 
-            Log.i("MainViewModel", "logOut: ${firebaseAuth.currentUser}")
             Result.Success(Unit)
         } catch (e: Exception) {
             Result.Error(e)
