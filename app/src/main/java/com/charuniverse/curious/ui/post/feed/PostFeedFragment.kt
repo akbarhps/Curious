@@ -22,19 +22,19 @@ class PostFeedFragment : Fragment(R.layout.fragment_post_feed) {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        binding = FragmentPostFeedBinding.inflate(inflater, container, false)
-        binding.viewModel = viewModel
+        binding = FragmentPostFeedBinding.inflate(inflater, container, false).also {
+            it.lifecycleOwner = this
+            it.viewModel = viewModel
+        }
+
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val adapter = PostAdapter(viewModel)
-        binding.postsList.adapter = adapter
 
-        viewModel.posts.observe(viewLifecycleOwner, {
-            adapter.submitList(it)
-        })
+        binding.postsList.adapter = PostAdapter(viewModel)
+
         viewModel.openDetail.observe(viewLifecycleOwner, EventObserver {
             val dest = PostFeedFragmentDirections.actionPostFeedFragmentToPostDetailFragment()
             findNavController().navigate(dest)

@@ -17,18 +17,20 @@
         android:layout_height="match_parent"
         tools:context=".ui.post.feed.PostFeedFragment">
 
-        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        <com.charuniverse.curious.util.PullToRefreshLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:onRefreshCallback="@{() -> viewModel.refresh()}">
+            app:refreshing="@{viewModel.isLoading}"
+            app:onRefreshListener="@{() -> viewModel.refresh()}">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/postsList"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                app:setPostFeedResponse="@{viewModel.posts}" />
 
-        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        </com.charuniverse.curious.util.PullToRefreshLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

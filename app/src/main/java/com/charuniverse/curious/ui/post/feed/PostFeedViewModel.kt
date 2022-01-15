@@ -30,17 +30,20 @@ class PostFeedViewModel @Inject constructor(
 
     private val cachedUser = mutableMapOf<String, User>()
 
+    private val _isLoading = MutableLiveData(false)
+    val isLoading: LiveData<Boolean> = _isLoading
+
     private val _openDetail = MutableLiveData<Event<Boolean>>()
     val openDetail: LiveData<Event<Boolean>> = _openDetail
 
     init {
-        viewModelScope.launch {
-            postRepository.refreshPost()
-        }
+        refresh()
     }
 
     fun refresh() = viewModelScope.launch {
+        _isLoading.value = true
         postRepository.refreshPost()
+        _isLoading.value = false
     }
 
     fun openPost(postId: String) {
@@ -51,6 +54,7 @@ class PostFeedViewModel @Inject constructor(
     private fun filterPost(postsResult: Result<List<Post>>): LiveData<List<PostFeedResponse>> {
         val result = MutableLiveData<List<PostFeedResponse>>()
 
+        // FIXME: 15/01/2022 refactor this shit 
         if (postsResult is Result.Success) {
             viewModelScope.launch {
                 result.value = postsResult.data.map {
