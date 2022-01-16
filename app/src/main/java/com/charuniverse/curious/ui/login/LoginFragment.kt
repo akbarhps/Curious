@@ -53,6 +53,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
 
     private val signInLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            Log.i(TAG, "login code: ${it.resultCode}")
             if (it.resultCode != Activity.RESULT_OK) {
                 Log.i(TAG, "login failed, code: ${it.resultCode}")
                 return@registerForActivityResult

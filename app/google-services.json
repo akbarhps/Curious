@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "195416267957-fulv2spd0oeh8f5oshf5nbt5e0cok093.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.charuniverse.curious",
+            "certificate_hash": "f0df44beb6016a9b5d38dde8c252b2484f5d5c24"
+          }
+        },
+        {
           "client_id": "195416267957-efa1n0ar23i51muhd8c8pa11emk18q7j.apps.googleusercontent.com",
           "client_type": 3
         }

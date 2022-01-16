@@ -31,6 +31,8 @@ class PostCreateEditFragment : Fragment(R.layout.fragment_post_create_edit) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
+        requireActivity().title = if (args.postId != null) "Edit Post" else "Create Post"
+
         viewModel.setPostId(args.postId)
 
         binding = FragmentPostCreateEditBinding.bind(view).also {
@@ -45,9 +47,8 @@ class PostCreateEditFragment : Fragment(R.layout.fragment_post_create_edit) {
         }
 
         viewModel.post.observe(viewLifecycleOwner, {
-            if (it == null) return@observe
-            binding.content.setText(it.content)
-            binding.title.setText(it.title)
+            binding.title.setText(it?.title ?: "")
+            binding.content.setText(it?.content ?: "")
         })
 
         setupEventObserver()
@@ -55,38 +56,45 @@ class PostCreateEditFragment : Fragment(R.layout.fragment_post_create_edit) {
 
     private fun setupEventObserver() {
         viewModel.markdownElement.observe(viewLifecycleOwner, EventObserver {
-            val content = binding.content
-            val start = content.selectionStart
-            val end = content.selectionEnd
+            handleMarkdownTagEvent(it)
+        })
 
-            val currentText = content.text.toString()
-            val textBeforeStart = currentText.substring(0, start)
-            val textAfterEnd = currentText.substring(end)
-            val currentSelection = currentText.subSequence(start, end).toString()
+        viewModel.viewState.observe(viewLifecycleOwner, EventObserver {
+            Dialogs.toggleProgressBar(it.isLoading)
 
-            val newText = if (start == end) {
-                "$textBeforeStart${it.prefix}${it.suffix}$textAfterEnd"
-            } else {
-                "$textBeforeStart${it.prefix}$currentSelection${it.suffix}$textAfterEnd"
+            if (it.errorMessage != null) {
+                Toast.makeText(requireContext(), it.errorMessage, Toast.LENGTH_LONG).show()
             }
 
-            content.setText(newText)
-            if (start == end) {
-                content.setSelection(textBeforeStart.length + it.prefix.length)
-            } else {
-                content.setSelection(textBeforeStart.length + it.prefix.length + it.suffix.length + currentSelection.length)
+            if (it.isCompleted) {
+                postViewModel.forceRefresh()
+                findNavController().navigateUp()
             }
         })
-        viewModel.isLoading.observe(viewLifecycleOwner, {
-            Dialogs.toggleProgressBar(it)
-        })
-        viewModel.errorMessage.observe(viewLifecycleOwner, EventObserver {
-            Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
-        })
-        viewModel.isDone.observe(viewLifecycleOwner, EventObserver {
-            postViewModel.forceRefresh()
-            findNavController().navigateUp()
-        })
+    }
+
+    private fun handleMarkdownTagEvent(e: Markdown.Element) {
+        val content = binding.content
+        val start = content.selectionStart
+        val end = content.selectionEnd
+
+        val currentText = content.text.toString()
+        val textBeforeStart = currentText.substring(0, start)
+        val textAfterEnd = currentText.substring(end)
+        val currentSelection = currentText.subSequence(start, end).toString()
+
+        val newText = if (start == end) {
+            "$textBeforeStart${e.prefix}${e.suffix}$textAfterEnd"
+        } else {
+            "$textBeforeStart${e.prefix}$currentSelection${e.suffix}$textAfterEnd"
+        }
+
+        content.setText(newText)
+        if (start == end) {
+            content.setSelection(textBeforeStart.length + e.prefix.length)
+        } else {
+            content.setSelection(textBeforeStart.length + e.prefix.length + e.suffix.length + currentSelection.length)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
