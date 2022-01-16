@@ -18,14 +18,17 @@ class UserRemoteDataSource(
 
     private val userRef = firebaseDatabase.reference.child("users")
 
-    private val observableUser = MutableLiveData<Result<User>>()
+    private var cachedUser = mutableMapOf<String, User>()
 
-    suspend fun refreshUser(userId: String) {
-        observableUser.value = findById(userId)!!
+    fun refreshCachedUser() {
+        cachedUser = mutableMapOf()
     }
 
-    fun observeUser(): LiveData<Result<User>> {
-        return observableUser
+    private val observableUser = MutableLiveData<Result<User>>()
+    fun observeUser(): LiveData<Result<User>> = observableUser
+
+    suspend fun refreshObservableUser(userId: String) = withContext(dispatcherContext) {
+        observableUser.value = findById(userId)!!
     }
 
     suspend fun save(user: User): Result<Unit> = withContext(dispatcherContext) {
@@ -37,14 +40,17 @@ class UserRemoteDataSource(
         }
     }
 
-    suspend fun saveIfNotFound(user: User): Result<Unit> = withContext(dispatcherContext) {
+    suspend fun saveIfNotExist(user: User): Result<Unit> = withContext(dispatcherContext) {
         return@withContext try {
             val doc = userRef.child(user.id).get().await()
-            val remoteUser = doc.getValue(User::class.java)
+
+            var remoteUser = doc.getValue(User::class.java)
             if (remoteUser == null) {
                 userRef.child(user.id).setValue(user).await()
+                remoteUser = user
             }
 
+            cachedUser[user.id] = remoteUser
             Success(Unit)
         } catch (e: Exception) {
             Error(e)
@@ -52,12 +58,15 @@ class UserRemoteDataSource(
     }
 
     suspend fun findById(userId: String): Result<User> = withContext(dispatcherContext) {
+        cachedUser[userId]?.let { return@withContext Success(it) }
+
         return@withContext try {
             val doc = userRef.child(userId).get().await()
 
             val user = doc.getValue(User::class.java)
                 ?: throw IllegalArgumentException("User not found")
 
+            cachedUser[user.id] = user
             Success(user)
         } catch (e: Exception) {
             Error(e)
@@ -76,5 +85,4 @@ class UserRemoteDataSource(
             Error(e)
         }
     }
-
 }

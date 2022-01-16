@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charuniverse.curious.data.Result
+import com.charuniverse.curious.data.entity.User
 import com.charuniverse.curious.data.repository.AuthRepository
 import com.charuniverse.curious.data.repository.UserRepository
 import com.charuniverse.curious.util.Event
@@ -27,6 +28,9 @@ class ProfileViewModel @Inject constructor(
 
     private val _viewState = MutableLiveData<ProfileViewState>()
     val viewState: LiveData<ProfileViewState> = _viewState
+
+    private val _user = MutableLiveData<User>()
+    val user: LiveData<User> = _user
 
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading

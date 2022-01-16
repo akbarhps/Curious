@@ -57,9 +57,8 @@ class LoginViewModel @Inject constructor(
         }
 
         val loginUser = authRepository.getLoginUser()!!
-        Log.i(TAG, "login user: $loginUser")
 
-        val saveResult = userRepository.saveIfNotFound(loginUser)
+        val saveResult = userRepository.saveIfNotExist(loginUser)
         if (saveResult.failed) {
             _message.value = Event(saveResult.exception.message.toString())
             _loading.value = false

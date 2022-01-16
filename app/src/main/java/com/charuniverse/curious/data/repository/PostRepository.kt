@@ -26,7 +26,7 @@ class PostRepository(
         remoteDataSource.refreshUserPosts(userId)
     }
 
-    fun observeUserPosts(userId: String): LiveData<Result<List<Post>>> {
+    fun observeUserPosts(): LiveData<Result<List<Post>>> {
         return remoteDataSource.observeUserPosts()
     }
 

@@ -52,8 +52,8 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
         viewModel.viewState.observe(viewLifecycleOwner, EventObserver {
             Dialogs.toggleProgressBar(it.isLoading)
 
-            if (it.error != null) {
-                Toast.makeText(requireContext(), it.error, Toast.LENGTH_SHORT).show()
+            if (it.fetchPostError != null) {
+                Toast.makeText(requireContext(), it.fetchPostError, Toast.LENGTH_SHORT).show()
             }
 
             if (it.isCompleted) {

@@ -2,8 +2,8 @@ package com.charuniverse.curious.data.repository
 
 import androidx.lifecycle.LiveData
 import com.charuniverse.curious.data.Result
-import com.charuniverse.curious.data.source.remote.UserRemoteDataSource
 import com.charuniverse.curious.data.entity.User
+import com.charuniverse.curious.data.source.remote.UserRemoteDataSource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 
@@ -16,16 +16,16 @@ class UserRepository(
         return remoteDataSource.observeUser()
     }
 
-    suspend fun refreshUser(userId: String) {
-        remoteDataSource.refreshUser(userId)
+    suspend fun refreshObservableUser(userId: String) {
+        remoteDataSource.refreshObservableUser(userId)
     }
 
     suspend fun save(user: User): Result<Unit> {
         return remoteDataSource.save(user)
     }
 
-    suspend fun saveIfNotFound(user: User): Result<Unit> {
-        return remoteDataSource.saveIfNotFound(user)
+    suspend fun saveIfNotExist(user: User): Result<Unit> {
+        return remoteDataSource.saveIfNotExist(user)
     }
 
     suspend fun findById(userId: String): Result<User> {

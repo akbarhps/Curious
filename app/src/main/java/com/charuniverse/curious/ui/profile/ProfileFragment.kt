@@ -1,6 +1,9 @@
 package com.charuniverse.curious.ui.profile
 
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -21,11 +24,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setHasOptionsMenu(true)
         binding = FragmentProfileBinding.bind(view)
-
-        binding.logOut.setOnClickListener {
-            viewModel.logOut(requireContext())
-        }
 
         viewModel.viewState.observe(viewLifecycleOwner, {
             binding.viewState = it
@@ -40,5 +40,23 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             val dest = ProfileFragmentDirections.actionProfileFragmentToLoginFragment()
             findNavController().navigate(dest)
         })
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_profile, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.profile_log_out -> {
+                viewModel.logOut(requireContext())
+                true
+            }
+            R.id.profile_edit -> {
+                // navigate to profile edit fragment
+                true
+            }
+            else -> false
+        }
     }
 }

@@ -57,6 +57,7 @@ class PostViewModel @Inject constructor(
     private fun handleResult(result: Result<List<PostDetail>>): LiveData<List<PostDetail>> {
         if (result is Result.Error) {
             Log.e(TAG, "filterData: ${result.exception.message}", result.exception)
+
             _errorMessage.value = Event(result.exception.message.toString())
             return MutableLiveData(listOf())
         }
