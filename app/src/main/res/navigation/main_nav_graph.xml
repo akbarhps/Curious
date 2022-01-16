@@ -53,7 +53,7 @@
     <fragment
         android:id="@+id/postDetailFragment"
         android:name="com.charuniverse.curious.ui.post.detail.PostDetailFragment"
-        android:label="PostDetailFragment" >
+        android:label="" >
         <argument
             android:name="postId"
             app:argType="string" />

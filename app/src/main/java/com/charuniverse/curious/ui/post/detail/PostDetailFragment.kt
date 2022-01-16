@@ -45,18 +45,21 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
     }
 
     private fun setupEventObserver() {
-        viewModel.isLoading.observe(viewLifecycleOwner, {
-            Dialogs.toggleProgressBar(it)
-        })
-        viewModel.errorMessage.observe(viewLifecycleOwner, EventObserver {
-            Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
-        })
         postViewModel.forceRefresh.observe(viewLifecycleOwner, EventObserver {
             postViewModel.refreshData()
         })
-        viewModel.isDone.observe(viewLifecycleOwner, EventObserver {
-            postViewModel.forceRefresh()
-            findNavController().navigateUp()
+
+        viewModel.viewState.observe(viewLifecycleOwner, EventObserver {
+            Dialogs.toggleProgressBar(it.isLoading)
+
+            if (it.error != null) {
+                Toast.makeText(requireContext(), it.error, Toast.LENGTH_SHORT).show()
+            }
+
+            if (it.isCompleted) {
+                postViewModel.refresh()
+                findNavController().navigateUp()
+            }
         })
     }
 

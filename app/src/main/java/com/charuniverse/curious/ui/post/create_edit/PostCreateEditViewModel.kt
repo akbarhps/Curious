@@ -5,7 +5,6 @@ import androidx.lifecycle.*
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.entity.Post
 import com.charuniverse.curious.data.model.PostDetail
-import com.charuniverse.curious.data.repository.PostDetailRepository
 import com.charuniverse.curious.data.repository.PostRepository
 import com.charuniverse.curious.util.Event
 import com.charuniverse.curious.util.Markdown
@@ -17,7 +16,6 @@ import javax.inject.Inject
 @HiltViewModel
 class PostCreateEditViewModel @Inject constructor(
     private val postRepository: PostRepository,
-    private val postDetailRepository: PostDetailRepository,
 ) : ViewModel() {
 
     companion object {
@@ -54,7 +52,7 @@ class PostCreateEditViewModel @Inject constructor(
 
     private val _post = _postId.switchMap { id ->
         if (id.isBlank()) return@switchMap MutableLiveData(null)
-        postDetailRepository.observeData(id).map { handleResult(it) }
+        postRepository.observePost(id).map { handleResult(it) }
     }
     val post: LiveData<PostDetail?> = _post
 

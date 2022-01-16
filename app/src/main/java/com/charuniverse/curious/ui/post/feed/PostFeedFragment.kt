@@ -2,6 +2,7 @@ package com.charuniverse.curious.ui.post.feed
 
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -40,6 +41,9 @@ class PostFeedFragment : Fragment(R.layout.fragment_post_feed) {
         })
         viewModel.forceRefresh.observe(viewLifecycleOwner, EventObserver {
             viewModel.refreshData()
+        })
+        viewModel.errorMessage.observe(viewLifecycleOwner, EventObserver {
+            Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
         })
     }
 }

@@ -32,7 +32,7 @@ class PostRemoteDataSource(
     }
 
     private val observableUserPosts = MutableLiveData<Result<List<Post>>>()
-    fun observeUserPosts(userId: String): LiveData<Result<List<Post>>> = observableUserPosts
+    fun observeUserPosts(): LiveData<Result<List<Post>>> = observableUserPosts
 
     suspend fun refreshUserPosts(userId: String) = withContext(Dispatchers.Main) {
         observableUserPosts.value = findByUserId(userId)!!

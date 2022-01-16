@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.*
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.model.PostDetail
-import com.charuniverse.curious.data.repository.PostDetailRepository
+import com.charuniverse.curious.data.repository.PostRepository
 import com.charuniverse.curious.util.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PostViewModel @Inject constructor(
-    private val postDetailRepository: PostDetailRepository,
+    private val postRepository: PostRepository
 ) : ViewModel() {
 
     companion object {
@@ -28,8 +28,8 @@ class PostViewModel @Inject constructor(
     private val _forceRefresh = MutableLiveData<Event<Boolean>>()
     val forceRefresh: LiveData<Event<Boolean>> = _forceRefresh
 
-    private val _postList: LiveData<List<PostDetail>> = postDetailRepository
-        .observeListData().distinctUntilChanged()
+    private val _postList: LiveData<List<PostDetail>> = postRepository
+        .observePosts().distinctUntilChanged()
         .switchMap { return@switchMap handleResult(it) }
     val postList: LiveData<List<PostDetail>> = _postList
 
@@ -44,13 +44,13 @@ class PostViewModel @Inject constructor(
         refreshData()
     }
 
-    fun forceRefresh() {
+    fun refresh() {
         _forceRefresh.value = Event(true)
     }
 
     fun refreshData() = viewModelScope.launch {
         _isLoading.value = true
-        postDetailRepository.refreshDataList()
+        postRepository.refreshPosts()
         _isLoading.value = false
     }
 

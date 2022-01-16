@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
             setOnItemReselectedListener { }
         }
 
-        navController.addOnDestinationChangedListener { controller, destination, args ->
+        navController.addOnDestinationChangedListener { _, destination, _ ->
             binding.toolbar.visibility =
                 if (hideToolbarOnFragment.contains(destination.id)) View.GONE else View.VISIBLE
 

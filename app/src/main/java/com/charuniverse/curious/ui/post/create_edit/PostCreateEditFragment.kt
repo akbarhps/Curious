@@ -67,7 +67,7 @@ class PostCreateEditFragment : Fragment(R.layout.fragment_post_create_edit) {
             }
 
             if (it.isCompleted) {
-                postViewModel.forceRefresh()
+                postViewModel.refresh()
                 findNavController().navigateUp()
             }
         })

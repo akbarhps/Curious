@@ -13,6 +13,4 @@ object Constant {
     const val MONTH_IN_SECONDS = DAY_IN_SECONDS * 30
     const val YEAR_IN_SECONDS = MONTH_IN_SECONDS * 12
 
-    var post = PostDetail()
-
 }
