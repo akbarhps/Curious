@@ -8,8 +8,8 @@ import com.charuniverse.curious.data.Result.*
 import com.charuniverse.curious.data.entity.Comment
 import com.charuniverse.curious.data.entity.Post
 import com.charuniverse.curious.data.entity.User
-import com.charuniverse.curious.data.model.CommentDetail
 import com.charuniverse.curious.data.model.PostDetail
+import com.charuniverse.curious.exception.NotFound
 import com.charuniverse.curious.util.Cache
 import com.charuniverse.curious.util.Preferences
 import com.google.firebase.database.FirebaseDatabase
@@ -32,7 +32,7 @@ class PostRemoteDataSource(
 
     suspend fun refreshPosts() = withContext(Dispatchers.Main) {
         Cache.clearCache()
-        observablePosts.value = findAll()!!
+        observablePosts.value = findAll() ?: Success(listOf<PostDetail>())
     }
 
     fun observeUserPosts(userId: String): LiveData<Result<List<PostDetail>>> {
@@ -54,8 +54,9 @@ class PostRemoteDataSource(
                 is Loading -> Loading
                 is Error -> Error(posts.exception)
                 is Success -> {
-                    val post = posts.data.firstOrNull { it.id == postId }!!
-                    Success(post)
+                    val post = posts.data.firstOrNull { it.id == postId }
+                    if (post == null) Error(NotFound("Post not found"))
+                    Success(post!!)
                 }
             }
         }
@@ -130,9 +131,11 @@ class PostRemoteDataSource(
     }
 
     suspend fun update(post: Post): Result<Unit> = withContext(context) {
-        val updates: MutableMap<String, Any> = HashMap()
-
         return@withContext try {
+            val updates: MutableMap<String, Any> = HashMap()
+            postRef.child(post.id).get().await().getValue(Post::class.java)
+                ?: return@withContext Error(NotFound("Post not found"))
+
             updates["${post.id}/title"] = post.title
             updates["${post.id}/content"] = post.content
             updates["${post.id}/updatedAt"] = System.currentTimeMillis()
@@ -154,10 +157,13 @@ class PostRemoteDataSource(
 
     suspend fun addComment(comment: Comment): Result<Unit> = withContext(context) {
         val updates: MutableMap<String, Any> = HashMap()
-
         return@withContext try {
+            postRef.child(comment.postId).get().await().getValue(Post::class.java)
+                ?: return@withContext Error(NotFound("Post not found"))
+
             updates["${comment.postId}/comments/${comment.id}"] = comment
             updates["${comment.postId}/commentCount"] = ServerValue.increment(1)
+
             postRef.updateChildren(updates)
             Success(Unit)
         } catch (e: Exception) {
@@ -168,8 +174,10 @@ class PostRemoteDataSource(
     suspend fun deleteComment(postId: String, commentId: String): Result<Unit> =
         withContext(context) {
             val updates: MutableMap<String, Any?> = HashMap()
-
             return@withContext try {
+                postRef.child(postId).get().await().getValue(Post::class.java)
+                    ?: return@withContext Error(NotFound("Post not found"))
+
                 updates["${postId}/comments/${commentId}"] = null
                 updates["${postId}/commentCount"] = ServerValue.increment(-1)
                 postRef.updateChildren(updates)
@@ -182,8 +190,10 @@ class PostRemoteDataSource(
     suspend fun toggleLove(postId: String): Result<Unit> = withContext(context) {
         val uid = Preferences.userId
         val updates: MutableMap<String, Any?> = HashMap()
-
         return@withContext try {
+            postRef.child(postId).get().await().getValue(Post::class.java)
+                ?: return@withContext Error(NotFound("Post not found"))
+
             val hasLike = postRef.child("$postId/lovers/$uid").get().await()
 
             if (hasLike.getValue(Long::class.java) == null) {

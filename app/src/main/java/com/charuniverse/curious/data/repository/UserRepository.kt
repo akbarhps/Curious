@@ -9,7 +9,7 @@ import kotlinx.coroutines.Dispatchers
 
 class UserRepository(
     private val remoteDataSource: UserRemoteDataSource,
-    private val dispatcherContext: CoroutineDispatcher = Dispatchers.IO,
+    private val context: CoroutineDispatcher = Dispatchers.IO,
 ) {
 
     fun observeUser(): LiveData<Result<User>> {

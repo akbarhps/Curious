@@ -4,6 +4,7 @@ import android.content.Context
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.entity.User
 import com.charuniverse.curious.util.Constant
+import com.charuniverse.curious.util.Preferences
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -57,6 +58,7 @@ class AuthRepository(
         return@withContext try {
             buildGoogleSignInClient(context).signOut().await()
             firebaseAuth.signOut()
+            Preferences.userId = ""
 
             Result.Success(Unit)
         } catch (e: Exception) {

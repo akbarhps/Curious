@@ -12,6 +12,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.charuniverse.curious.R
 import com.charuniverse.curious.databinding.FragmentPostDetailBinding
+import com.charuniverse.curious.exception.NotFound
 import com.charuniverse.curious.util.EventObserver
 import com.charuniverse.curious.util.Preferences
 import dagger.hilt.android.AndroidEntryPoint
@@ -36,7 +37,6 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
         }
 
         viewModel.post.observe(viewLifecycleOwner, {
-            if (it == null) return@observe
             setHasOptionsMenu(it.createdBy == Preferences.userId)
             postCommentsAdapter.submitList(it.comments?.values?.toList())
         })
@@ -48,12 +48,15 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
         viewModel.viewState.observe(viewLifecycleOwner, EventObserver {
             binding.scrollLayout.isRefreshing = it.isLoading
 
-            if (it.postError != null) {
-                Toast.makeText(requireContext(), it.postError, Toast.LENGTH_SHORT).show()
-            }
-
-            if (it.commentError != null) {
-                Toast.makeText(requireContext(), it.commentError, Toast.LENGTH_SHORT).show()
+            if (it.postError != null || it.commentError != null) {
+                val error = it.postError ?: it.commentError
+                if (error is NotFound) {
+                    Toast.makeText(requireContext(), error.message.toString(), Toast.LENGTH_SHORT)
+                        .show()
+                    viewModel.refreshPost()
+                    findNavController().navigateUp()
+                    return@EventObserver
+                }
             }
 
             if (it.uploadCommentSuccess) {

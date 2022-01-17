@@ -7,18 +7,19 @@
 
         <import type="com.charuniverse.curious.ui.profile.ProfileViewModel" />
 
-        <import type="com.charuniverse.curious.ui.profile.ProfileViewState" />
+        <import type="com.charuniverse.curious.data.entity.User" />
 
         <variable
             name="viewModel"
             type="ProfileViewModel" />
 
         <variable
-            name="viewState"
-            type="ProfileViewState" />
+            name="user"
+            type="User" />
     </data>
 
     <com.charuniverse.curious.util.ScrollChildSwipeRefreshLayout
+        android:id="@+id/swipeLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -29,30 +30,37 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center|top"
                 android:orientation="vertical"
-                android:padding="16dp"
                 tools:context=".ui.profile.ProfileFragment">
 
-                <ImageView
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:src="@drawable/ic_baseline_person_24"
-                    app:loadCircular="@{viewState.user.profilePictureURL}" />
-
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="@{viewState.user.displayName}"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="@{`@` + viewState.user.username}" />
+                    <ImageView
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:src="@drawable/ic_baseline_person_24"
+                        app:loadCircular="@{user.profilePictureURL}" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@{user.displayName}"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@{`@` + user.username}" />
+
+                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"

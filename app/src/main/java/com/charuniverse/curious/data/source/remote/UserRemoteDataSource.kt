@@ -22,7 +22,7 @@ class UserRemoteDataSource(
     private val observableUser = MutableLiveData<Result<User>>()
     fun observeUser(): LiveData<Result<User>> = observableUser
 
-    suspend fun refreshObservableUser(userId: String) = withContext(context) {
+    suspend fun refreshObservableUser(userId: String) = withContext(Dispatchers.Main) {
         observableUser.value = findById(userId)!!
     }
 

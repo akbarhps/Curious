@@ -1,10 +1,7 @@
 package com.charuniverse.curious.ui.profile
 
-import com.charuniverse.curious.data.entity.User
-
 data class ProfileViewState(
-    var user: User? = null,
-    var isEditing: Boolean = false,
     var isLoading: Boolean = false,
+    var error: Exception? = null,
     var isSignOut: Boolean = false,
 )

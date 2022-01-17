@@ -6,6 +6,7 @@ import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.entity.Comment
 import com.charuniverse.curious.data.model.PostDetail
 import com.charuniverse.curious.data.repository.PostRepository
+import com.charuniverse.curious.exception.NotFound
 import com.charuniverse.curious.util.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -25,8 +26,8 @@ class PostDetailViewModel @Inject constructor(
 
     private fun updateState(
         isLoading: Boolean = false,
-        postError: String? = null,
-        commentError: String? = null,
+        postError: Exception? = null,
+        commentError: Exception? = null,
         uploadCommentSuccess: Boolean = false,
         deletePostSuccess: Boolean = false,
     ) {
@@ -45,7 +46,7 @@ class PostDetailViewModel @Inject constructor(
 
     fun setPostId(id: String) {
         if (id.isBlank()) {
-            updateState(postError = "No Post Id Provided")
+            updateState(postError = NotFound("Post not found"))
             return
         }
 
@@ -56,21 +57,24 @@ class PostDetailViewModel @Inject constructor(
     private val _post = _postId.switchMap { id ->
         postRepository.observePost(id).map { handlePostResult(it) }
     }
-    val post: LiveData<PostDetail?> = _post
+    val post: LiveData<PostDetail> = _post
 
     // two way data binding
     val inputComment = MutableLiveData("")
 
-    private fun handlePostResult(result: Result<PostDetail>): PostDetail? {
-        if (result is Result.Error) {
-            Log.e(TAG, "handleResult: ${result.exception.message}", result.exception)
-
-            updateState(postError = result.exception.message.toString())
-            return null
+    private fun handlePostResult(result: Result<PostDetail>): PostDetail {
+        return when (result) {
+            is Result.Loading -> PostDetail()
+            is Result.Error -> {
+                Log.e(TAG, "handleResult: ${result.exception.message}", result.exception)
+                updateState(postError = result.exception)
+                PostDetail()
+            }
+            is Result.Success -> {
+                updateState(isLoading = false)
+                result.data
+            }
         }
-
-        updateState(isLoading = false)
-        return (result as Result.Success).data
     }
 
     fun refreshPost() = viewModelScope.launch {
@@ -93,8 +97,7 @@ class PostDetailViewModel @Inject constructor(
         val result = postRepository.addComment(comment)
         if (result is Result.Error) {
             Log.e(TAG, "uploadComment: ${result.exception.message}", result.exception)
-
-            updateState(commentError = result.exception.message.toString())
+            updateState(commentError = result.exception)
             return@launch
         }
 
@@ -106,7 +109,7 @@ class PostDetailViewModel @Inject constructor(
         val result = postRepository.delete(_postId.value!!)
         if (result is Result.Error) {
             Log.e(TAG, "deletePost: ${result.exception.message}", result.exception)
-            updateState(postError = result.exception.message.toString())
+            updateState(postError = result.exception)
         } else {
             refreshPost()
             updateState(deletePostSuccess = true)

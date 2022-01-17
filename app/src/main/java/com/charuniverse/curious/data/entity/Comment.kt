@@ -8,6 +8,6 @@ data class Comment(
     var content: String = "",
     var createdBy: String = Preferences.userId,
     var createdAt: Long = System.currentTimeMillis(),
-    var id: String = "${createdAt}_${UUID.randomUUID()}",
+    var id: String = UUID.randomUUID().toString(),
     var updatedAt: Long? = null,
 )

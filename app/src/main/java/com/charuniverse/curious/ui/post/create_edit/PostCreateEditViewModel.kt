@@ -62,15 +62,17 @@ class PostCreateEditViewModel @Inject constructor(
         _markdownElement.value = Event(element)
     }
 
-    private fun handleResult(result: Result<PostDetail>): PostDetail? {
-        if (result is Result.Error) {
-            Log.e(TAG, "handleResult: ${result.exception.message}", result.exception)
-            updateState(isLoading = false, errorMessage = result.exception.message.toString())
-            return null
-        }
-
+    private fun handleResult(result: Result<PostDetail?>): PostDetail? {
         updateState(isLoading = false)
-        return (result as Result.Success).data
+        return when (result) {
+            is Result.Success -> result.data
+            is Result.Loading -> null
+            is Result.Error -> {
+                Log.e(TAG, "handleResult: ${result.exception.message}", result.exception)
+                updateState(errorMessage = result.exception.message.toString())
+                null
+            }
+        }
     }
 
     // FIXME: 16/01/2022

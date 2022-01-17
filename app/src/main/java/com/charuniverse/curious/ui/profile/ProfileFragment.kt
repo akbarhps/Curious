@@ -11,7 +11,6 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.charuniverse.curious.R
 import com.charuniverse.curious.databinding.FragmentProfileBinding
-import com.charuniverse.curious.ui.dialog.Dialogs
 import com.charuniverse.curious.util.EventObserver
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -25,25 +24,34 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
-        binding = FragmentProfileBinding.bind(view)
-        val adapter = UserPostAdapter(viewModel)
-        binding.postsList.adapter = adapter
 
-        viewModel.viewState.observe(viewLifecycleOwner, {
-            binding.viewState = it
+        val adapter = UserPostAdapter(viewModel)
+        binding = FragmentProfileBinding.bind(view).apply {
+            postsList.adapter = adapter
+        }
+
+        viewModel.user.observe(viewLifecycleOwner, {
+            it?.let { binding.user = it }
         })
         viewModel.userPosts.observe(viewLifecycleOwner, {
             adapter.submitList(it)
         })
-        viewModel.isLoading.observe(viewLifecycleOwner, {
-            Dialogs.toggleProgressBar(it)
-        })
-        viewModel.errorMessage.observe(viewLifecycleOwner, EventObserver {
-            Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
-        })
-        viewModel.isLoggedOut.observe(viewLifecycleOwner, EventObserver {
-            val dest = ProfileFragmentDirections.actionProfileFragmentToLoginFragment()
-            findNavController().navigate(dest)
+
+        setupEventObserver()
+    }
+
+    private fun setupEventObserver() {
+        viewModel.viewState.observe(viewLifecycleOwner, EventObserver { state ->
+            binding.swipeLayout.isRefreshing = state.isLoading
+
+            state.error?.let {
+                Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_SHORT).show()
+            }
+
+            if (state.isSignOut) {
+                val dest = ProfileFragmentDirections.actionProfileFragmentToLoginFragment()
+                findNavController().navigate(dest)
+            }
         })
     }
 

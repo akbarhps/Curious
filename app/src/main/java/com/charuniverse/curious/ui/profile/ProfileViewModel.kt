@@ -26,35 +26,42 @@ class ProfileViewModel @Inject constructor(
         private const val TAG = "ProfileViewModel"
     }
 
-    private val _viewState = MutableLiveData<ProfileViewState>()
-    val viewState: LiveData<ProfileViewState> = _viewState
+    private val _viewState = MutableLiveData<Event<ProfileViewState>>()
+    val viewState: LiveData<Event<ProfileViewState>> = _viewState
 
-    private val _user = MutableLiveData<User>()
-    val user: LiveData<User> = _user
+    private fun updateViewState(
+        isLoading: Boolean = false, isSignedOut: Boolean = false, error: Exception? = null
+    ) {
+        _viewState.value =
+            Event(ProfileViewState(isLoading = isLoading, isSignOut = isSignedOut, error = error))
+    }
 
-    private val _isLoading = MutableLiveData<Boolean>()
-    val isLoading: LiveData<Boolean> = _isLoading
+    private val _user = userRepository.observeUser()
+        .distinctUntilChanged().switchMap { return@switchMap handleUserResult(it) }
+    val user: LiveData<User?> = _user
 
-    private val _errorMessage = MutableLiveData<Event<String>>()
-    val errorMessage: LiveData<Event<String>> = _errorMessage
+    private fun handleUserResult(result: Result<User>): LiveData<User?> {
+        return if (result is Result.Error) MutableLiveData(null)
+        else MutableLiveData((result as Result.Success).data)
+    }
 
-    private val _isLoggedOut = MutableLiveData<Event<Boolean>>()
-    val isLoggedOut: LiveData<Event<Boolean>> = _isLoggedOut
-
-    private val _userPosts = postRepository.observeUserPosts(Preferences.userId)
-        .distinctUntilChanged().switchMap { handleUserPostResult(it) }
+    private val _userPosts = _user.switchMap { user ->
+        if (user == null) return@switchMap MutableLiveData(listOf())
+        postRepository.observeUserPosts(user.id)
+            .distinctUntilChanged().switchMap { handleUserPostResult(it) }
+    }
     val userPosts: LiveData<List<PostDetail>> = _userPosts
 
     private fun handleUserPostResult(result: Result<List<PostDetail>>): LiveData<List<PostDetail>> {
-        if (result is Result.Error) {
-            return MutableLiveData(listOf())
-        }
-
-        return MutableLiveData((result as Result.Success).data)
+        return if (result is Result.Error) MutableLiveData(listOf())
+        else MutableLiveData((result as Result.Success).data)
     }
 
     init {
-        getUser()
+        viewModelScope.launch {
+            // TODO: change this to dynamic value
+            userRepository.refreshObservableUser(Preferences.userId)
+        }
     }
 
     fun toggleLove(postId: String) = viewModelScope.launch {
@@ -62,28 +69,15 @@ class ProfileViewModel @Inject constructor(
         postRepository.refreshPosts()
     }
 
-    private fun getUser() = viewModelScope.launch {
-        _viewState.value = ProfileViewState(isLoading = true)
-
-        val loginUser = authRepository.getLoginUser()
-        val remoteUser = userRepository.findById(loginUser!!.id)
-
-        _viewState.value = ProfileViewState(user = (remoteUser as Result.Success).data)
-    }
-
     fun logOut(context: Context) = viewModelScope.launch {
-        _isLoading.value = true
         val result = authRepository.logOut(context)
 
-        _isLoading.value = false
         if (result is Result.Error) {
             Log.e(TAG, "logOut: ${result.exception.message}", result.exception)
-            _errorMessage.value = Event(result.exception.message.toString())
-            return@launch
+            updateViewState(error = result.exception)
+        } else {
+            updateViewState(isSignedOut = true)
         }
-
-        Preferences.userId = ""
-        _isLoggedOut.value = Event(true)
     }
 
 }
