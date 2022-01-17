@@ -6,7 +6,7 @@
 
         <import type="com.charuniverse.curious.util.Markdown.Element" />
 
-        <import type="com.charuniverse.curious.ui.adapter.MarkdownTagAdapter.Events" />
+        <import type="com.charuniverse.curious.ui.markdown.MarkdownTagAdapter.Events" />
 
         <variable
             name="events"

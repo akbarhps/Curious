@@ -30,13 +30,22 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
         viewModel.setPostId(args.postId)
         val postCommentsAdapter = PostCommentsAdapter(viewModel)
 
+        var postTitle = ""
+
         binding = FragmentPostDetailBinding.bind(view).also {
             it.viewModel = viewModel
             it.lifecycleOwner = this
             it.commentsList.adapter = postCommentsAdapter
+
+            it.fabOpenCreateComment.setOnClickListener {
+                val dest = PostDetailFragmentDirections
+                    .actionPostDetailFragmentToCommentCreateEditFragment(args.postId, postTitle)
+                findNavController().navigate(dest)
+            }
         }
 
         viewModel.post.observe(viewLifecycleOwner, {
+            postTitle = it.title
             setHasOptionsMenu(it.createdBy == Preferences.userId)
             postCommentsAdapter.submitList(it.comments?.values?.toList())
         })
@@ -45,27 +54,22 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
     }
 
     private fun setupEventObserver() {
-        viewModel.viewState.observe(viewLifecycleOwner, EventObserver {
-            binding.scrollLayout.isRefreshing = it.isLoading
+        viewModel.viewState.observe(viewLifecycleOwner, EventObserver { state ->
+            binding.scrollLayout.isRefreshing = state.isLoading
 
-            if (it.postError != null || it.commentError != null) {
-                val error = it.postError ?: it.commentError
-                if (error is NotFound) {
-                    Toast.makeText(requireContext(), error.message.toString(), Toast.LENGTH_SHORT)
+            state.error?.let {
+                if (it is NotFound) {
+                    Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_SHORT)
                         .show()
+
                     viewModel.refreshPost()
                     findNavController().navigateUp()
+
                     return@EventObserver
                 }
             }
 
-            if (it.uploadCommentSuccess) {
-                binding.comment.setText("")
-                binding.comment.clearFocus()
-                Toast.makeText(requireContext(), "Posted!", Toast.LENGTH_SHORT).show()
-            }
-
-            if (it.deletePostSuccess) {
+            if (state.isCompleted) {
                 findNavController().navigateUp()
             }
         })

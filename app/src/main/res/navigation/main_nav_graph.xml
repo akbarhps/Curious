@@ -7,67 +7,67 @@
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.charuniverse.curious.ui.profile.ProfileFragment"
-        android:label="Profile" >
+        android:label="Profile">
         <action
             android:id="@+id/action_profileFragment_to_loginFragment"
             app:destination="@id/loginFragment"
             app:popUpTo="@id/postFeedFragment"
             app:popUpToInclusive="true" />
     </fragment>
+
     <fragment
         android:id="@+id/postCreateEditFragment"
         android:name="com.charuniverse.curious.ui.post.create_edit.PostCreateEditFragment"
-        android:label="Create Post" >
+        android:label="Create Post">
         <argument
             android:name="postId"
+            android:defaultValue="@null"
             app:argType="string"
-            app:nullable="true"
-            android:defaultValue="@null" />
+            app:nullable="true" />
+        <action
+            android:id="@+id/action_postCreateEditFragment_to_markdownPreviewFragment"
+            app:destination="@id/markdownPreviewFragment" />
     </fragment>
+
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.charuniverse.curious.ui.login.LoginFragment"
-        android:label="LoginFragment" >
+        android:label="LoginFragment">
         <action
             android:id="@+id/action_loginFragment_to_postFeedFragment"
             app:destination="@id/postFeedFragment"
             app:popUpTo="@id/loginFragment"
             app:popUpToInclusive="true" />
     </fragment>
+
     <fragment
         android:id="@+id/postFeedFragment"
         android:name="com.charuniverse.curious.ui.post.feed.PostFeedFragment"
-        android:label="Feed" >
+        android:label="Feed">
         <action
             android:id="@+id/action_postFeedFragment_to_postDetailFragment"
             app:destination="@id/postDetailFragment" />
     </fragment>
-    <fragment
-        android:id="@+id/postCreatePreviewFragment"
-        android:name="com.charuniverse.curious.ui.post.create_edit.PostCreateEditPreviewFragment"
-        android:label="Post Preview" >
-        <argument
-            android:name="postId"
-            app:argType="string" />
-        <action
-            android:id="@+id/action_postCreatePreviewFragment_to_markdownPreviewFragment"
-            app:destination="@id/markdownPreviewFragment" />
-    </fragment>
+
     <fragment
         android:id="@+id/postDetailFragment"
         android:name="com.charuniverse.curious.ui.post.detail.PostDetailFragment"
-        android:label="" >
+        android:label="">
         <argument
             android:name="postId"
             app:argType="string" />
         <action
             android:id="@+id/action_postDetailFragment_to_postCreateEditFragment"
             app:destination="@id/postCreateEditFragment" />
+        <action
+            android:id="@+id/action_postDetailFragment_to_commentCreateEditFragment"
+            app:destination="@id/commentCreateEditFragment" />
     </fragment>
+
     <fragment
         android:id="@+id/commentCreateEditFragment"
         android:name="com.charuniverse.curious.ui.comment.CommentCreateEditFragment"
-        android:label="CommentCreateEditFragment" >
+        android:label="Send Comment">
         <argument
             android:name="postId"
             app:argType="string" />
@@ -76,19 +76,20 @@
             android:id="@+id/action_commentCreateEditFragment_to_markdownPreviewFragment"
             app:destination="@id/markdownPreviewFragment" />
     </fragment>
+
     <fragment
         android:id="@+id/markdownPreviewFragment"
         android:name="com.charuniverse.curious.ui.markdown.MarkdownPreviewFragment"
-        android:label="MarkdownPreviewFragment" >
+        android:label="MarkdownPreviewFragment">
         <argument
             android:name="title"
+            android:defaultValue="@null"
             app:argType="string"
-            app:nullable="true"
-            android:defaultValue="@null" />
+            app:nullable="true" />
         <argument
             android:name="content"
+            android:defaultValue="@null"
             app:argType="string"
-            app:nullable="true"
-            android:defaultValue="@null" />
+            app:nullable="true" />
     </fragment>
 </navigation>

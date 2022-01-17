@@ -1,4 +1,4 @@
-package com.charuniverse.curious.ui.adapter
+package com.charuniverse.curious.ui.markdown
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

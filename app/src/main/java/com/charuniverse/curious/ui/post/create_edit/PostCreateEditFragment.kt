@@ -1,19 +1,16 @@
 package com.charuniverse.curious.ui.post.create_edit
 
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
+import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import androidx.navigation.ui.onNavDestinationSelected
 import com.charuniverse.curious.R
 import com.charuniverse.curious.databinding.FragmentPostCreateEditBinding
-import com.charuniverse.curious.ui.dialog.Dialogs
+import com.charuniverse.curious.ui.markdown.MarkdownTagAdapter
+import com.charuniverse.curious.util.Dialog
 import com.charuniverse.curious.util.EventObserver
 import com.charuniverse.curious.util.Markdown
 import dagger.hilt.android.AndroidEntryPoint
@@ -21,37 +18,48 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class PostCreateEditFragment : Fragment(R.layout.fragment_post_create_edit) {
 
-    private val viewModel: PostCreateEditViewModel by activityViewModels()
+    private val viewModel: PostCreateEditViewModel by viewModels()
     private val args: PostCreateEditFragmentArgs by navArgs()
 
     private lateinit var binding: FragmentPostCreateEditBinding
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
         setHasOptionsMenu(true)
         requireActivity().title = if (args.postId != null) "Edit Post" else "Create Post"
 
-        viewModel.setPostId(args.postId)
-
-        binding = FragmentPostCreateEditBinding.bind(view).also {
+        return FragmentPostCreateEditBinding.inflate(inflater).let {
+            binding = it
             it.viewModel = viewModel
             it.lifecycleOwner = this
-            it.helper.adapter = MarkdownTagAdapter(viewModel).also { md ->
-                md.submitList(Markdown.elements)
-            }
-            it.content.setOnFocusChangeListener { _, isFocus ->
-                it.helper.visibility = if (isFocus) View.VISIBLE else View.GONE
-            }
+
+            return@let it.root
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        viewModel.setPostId(args.postId)
+
+        MarkdownTagAdapter(viewModel).also { adapter ->
+            binding.rvMarkdownTags.adapter = adapter
+            adapter.submitList(Markdown.elements)
+        }
+
+        binding.content.setOnFocusChangeListener { _, isFocus ->
+            binding.rvMarkdownTags.visibility = if (isFocus) View.VISIBLE else View.GONE
         }
 
         viewModel.post.observe(viewLifecycleOwner, {
+            if (it == null) return@observe
             //TODO: refactor this
             if (args.postId == null) {
                 binding.title.setText("")
                 binding.content.setText("")
             } else {
-                binding.title.setText(it?.title ?: "")
-                binding.content.setText(it?.content ?: "")
+                binding.title.setText(it.title)
+                binding.content.setText(it.content)
             }
         })
 
@@ -59,65 +67,42 @@ class PostCreateEditFragment : Fragment(R.layout.fragment_post_create_edit) {
     }
 
     private fun setupEventObserver() {
-        viewModel.markdownElement.observe(viewLifecycleOwner, EventObserver {
-            if (it.tag == Markdown.Tag.LINK) {
-                Toast.makeText(
-                    requireContext(), "Not yet implemented, please use: \n[text](link)",
-                    Toast.LENGTH_LONG
-                ).show()
-                return@EventObserver
-            }
-            handleMarkdownTagEvent(it)
-        })
+        viewModel.viewState.observe(viewLifecycleOwner, EventObserver { state ->
+            Dialog.toggleProgressBar(state.isLoading)
 
-        viewModel.viewState.observe(viewLifecycleOwner, EventObserver {
-            Dialogs.toggleProgressBar(it.isLoading)
-
-            if (it.errorMessage != null) {
-                Toast.makeText(requireContext(), it.errorMessage, Toast.LENGTH_LONG).show()
+            state.error?.let {
+                Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_LONG).show()
             }
 
-            if (it.isCompleted) {
+            if (state.isCompleted) {
                 findNavController().navigateUp()
             }
         })
     }
 
-    private fun handleMarkdownTagEvent(e: Markdown.Element) {
-        val content = binding.content
-        val start = content.selectionStart
-        val end = content.selectionEnd
-
-        val currentText = content.text.toString()
-        val textBeforeStart = currentText.substring(0, start)
-        val textAfterEnd = currentText.substring(end)
-        val currentSelection = currentText.subSequence(start, end).toString()
-
-        val newText = if (start == end) {
-            "$textBeforeStart${e.prefix}${e.suffix}$textAfterEnd"
-        } else {
-            "$textBeforeStart${e.prefix}$currentSelection${e.suffix}$textAfterEnd"
-        }
-
-        content.setText(newText)
-        if (start == end) {
-            content.setSelection(textBeforeStart.length + e.prefix.length)
-        } else {
-            content.setSelection(textBeforeStart.length + e.prefix.length + e.suffix.length + currentSelection.length)
-        }
-    }
-
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.menu_post_create, menu)
+        inflater.inflate(R.menu.menu_markdown_create_edit, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.upload_post) {
-            viewModel.createOrUpdatePost()
-            return true
+        return when (item.itemId) {
+            R.id.send -> {
+                viewModel.createOrUpdatePost()
+                true
+            }
+            R.id.markdownPreviewFragment -> {
+                openMarkdownPreview()
+                true
+            }
+            else -> false
         }
+    }
 
-        val navController = findNavController()
-        return item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
+    private fun openMarkdownPreview() {
+        val dest = PostCreateEditFragmentDirections
+            .actionPostCreateEditFragmentToMarkdownPreviewFragment(
+                binding.title.text.toString(), binding.content.text.toString()
+            )
+        findNavController().navigate(dest)
     }
 }

@@ -6,7 +6,8 @@ import com.charuniverse.curious.util.Markdown
 import com.google.android.material.textfield.TextInputEditText
 
 @BindingAdapter("app:handleMarkdownEvent")
-fun handleMarkdownEvent(view: EditText, element: Markdown.Element) {
+fun handleMarkdownEvent(view: EditText, element: Markdown.Element?) {
+    if (element == null) return
     val text = view.text.toString()
     val start = view.selectionStart
     val end = view.selectionEnd
@@ -26,11 +27,14 @@ fun handleMarkdownEvent(view: EditText, element: Markdown.Element) {
     if (start != end) {
         newPosition += element.suffix.length + textSelection.length
     }
+    view.requestFocus()
     view.setSelection(newPosition)
 }
 
 @BindingAdapter("app:handleMarkdownEvent")
-fun handleMarkdownEvent(view: TextInputEditText, element: Markdown.Element) {
+fun handleMarkdownEvent(view: TextInputEditText, element: Markdown.Element?) {
+    if (element == null) return
+
     val text = view.text.toString()
     val start = view.selectionStart
     val end = view.selectionEnd

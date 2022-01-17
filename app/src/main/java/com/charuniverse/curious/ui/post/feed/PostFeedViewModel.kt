@@ -5,7 +5,7 @@ import androidx.lifecycle.*
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.model.PostDetail
 import com.charuniverse.curious.data.repository.PostRepository
-import com.charuniverse.curious.ui.post.PostViewState
+import com.charuniverse.curious.ui.post.BaseViewState
 import com.charuniverse.curious.util.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -20,11 +20,11 @@ class PostFeedViewModel @Inject constructor(
         private const val TAG = "PostViewModel"
     }
 
-    private val _viewState = MutableLiveData<Event<PostViewState>>()
-    val viewState: LiveData<Event<PostViewState>> = _viewState
+    private val _viewState = MutableLiveData<Event<BaseViewState>>()
+    val viewState: LiveData<Event<BaseViewState>> = _viewState
 
     private fun updateViewState(isLoading: Boolean = false, error: Exception? = null) {
-        _viewState.value = Event(PostViewState(isLoading = isLoading, error = error))
+        _viewState.value = Event(BaseViewState(isLoading = isLoading, error = error))
     }
 
     private val _posts: LiveData<List<PostDetail>> = postRepository.observePosts()

@@ -48,7 +48,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_SHORT).show()
             }
 
-            if (state.isSignOut) {
+            if (state.isCompleted) {
                 val dest = ProfileFragmentDirections.actionProfileFragmentToLoginFragment()
                 findNavController().navigate(dest)
             }

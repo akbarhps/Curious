@@ -9,6 +9,7 @@ import com.charuniverse.curious.data.model.PostDetail
 import com.charuniverse.curious.data.repository.AuthRepository
 import com.charuniverse.curious.data.repository.PostRepository
 import com.charuniverse.curious.data.repository.UserRepository
+import com.charuniverse.curious.ui.post.BaseViewState
 import com.charuniverse.curious.util.Event
 import com.charuniverse.curious.util.Preferences
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,14 +27,14 @@ class ProfileViewModel @Inject constructor(
         private const val TAG = "ProfileViewModel"
     }
 
-    private val _viewState = MutableLiveData<Event<ProfileViewState>>()
-    val viewState: LiveData<Event<ProfileViewState>> = _viewState
+    private val _viewState = MutableLiveData<Event<BaseViewState>>()
+    val viewState: LiveData<Event<BaseViewState>> = _viewState
 
     private fun updateViewState(
-        isLoading: Boolean = false, isSignedOut: Boolean = false, error: Exception? = null
+        isLoading: Boolean = false, isCompleted: Boolean = false, error: Exception? = null
     ) {
         _viewState.value =
-            Event(ProfileViewState(isLoading = isLoading, isSignOut = isSignedOut, error = error))
+            Event(BaseViewState(isLoading = isLoading, isCompleted = isCompleted, error = error))
     }
 
     private val _user = userRepository.observeUser()
@@ -70,13 +71,14 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun logOut(context: Context) = viewModelScope.launch {
+        updateViewState(isLoading = true)
         val result = authRepository.logOut(context)
 
         if (result is Result.Error) {
             Log.e(TAG, "logOut: ${result.exception.message}", result.exception)
             updateViewState(error = result.exception)
         } else {
-            updateViewState(isSignedOut = true)
+            updateViewState(isCompleted = true)
         }
     }
 

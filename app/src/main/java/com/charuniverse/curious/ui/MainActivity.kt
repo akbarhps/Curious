@@ -12,8 +12,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.charuniverse.curious.R
 import com.charuniverse.curious.databinding.ActivityMainBinding
-import com.charuniverse.curious.ui.dialog.Dialogs
-import com.charuniverse.curious.ui.dialog.ProgressBarDialog
+import com.charuniverse.curious.util.Dialog
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -34,17 +33,15 @@ class MainActivity : AppCompatActivity() {
 
     private val hideBottomNavOnFragment = listOf(
         R.id.loginFragment,
-        R.id.postCreateEditFragment,
-        R.id.postCreatePreviewFragment,
         R.id.postDetailFragment,
+        R.id.postCreateEditFragment,
+        R.id.commentCreateEditFragment,
+        R.id.markdownPreviewFragment,
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        Dialogs.let {
-            it.dialogProgressBar = ProgressBarDialog(this)
-        }
+        Dialog.init(this)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)

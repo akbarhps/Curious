@@ -11,7 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.charuniverse.curious.R
 import com.charuniverse.curious.databinding.FragmentLoginBinding
-import com.charuniverse.curious.ui.dialog.Dialogs
+import com.charuniverse.curious.util.Dialog
 import com.charuniverse.curious.util.EventObserver
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.common.api.ApiException
@@ -40,21 +40,23 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     }
 
     private fun setupObserver() {
-        viewModel.loading.observe(viewLifecycleOwner, {
-            Dialogs.toggleProgressBar(it)
-        })
-        viewModel.message.observe(viewLifecycleOwner, EventObserver {
-            Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
-        })
-        viewModel.loginSuccess.observe(viewLifecycleOwner, EventObserver {
-            updateUI()
+        viewModel.viewState.observe(viewLifecycleOwner, EventObserver { state ->
+            Dialog.toggleProgressBar(state.isLoading)
+
+            state.error?.let {
+                Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_LONG).show()
+            }
+
+            if (state.isCompleted) {
+                updateUI()
+            }
         })
     }
 
     private val signInLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (it.resultCode != Activity.RESULT_OK) {
-                Log.i(TAG, "login failed, code: ${it.resultCode}")
+                Log.i(TAG, "login code: ${it.resultCode}")
                 return@registerForActivityResult
             }
 

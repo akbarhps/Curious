@@ -6,33 +6,33 @@ import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.entity.Post
 import com.charuniverse.curious.data.model.PostDetail
 import com.charuniverse.curious.data.repository.PostRepository
+import com.charuniverse.curious.ui.markdown.MarkdownTagAdapter
+import com.charuniverse.curious.ui.post.BaseViewState
 import com.charuniverse.curious.util.Event
 import com.charuniverse.curious.util.Markdown
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class PostCreateEditViewModel @Inject constructor(
     private val postRepository: PostRepository,
-) : ViewModel() {
+) : ViewModel(), MarkdownTagAdapter.Events {
 
     companion object {
         private const val TAG = "PostCreateViewModel"
     }
 
-    private val _viewState = MutableLiveData<Event<PostCreateViewState>>()
-    val viewState: LiveData<Event<PostCreateViewState>> = _viewState
+    private val _viewState = MutableLiveData<Event<BaseViewState>>()
+    val viewState: LiveData<Event<BaseViewState>> = _viewState
 
     private fun updateState(
-        isLoading: Boolean = false, errorMessage: String? = null, isCompleted: Boolean = false,
+        isLoading: Boolean = false, error: Exception? = null, isCompleted: Boolean = false,
     ) {
         _viewState.value = Event(
-            PostCreateViewState(
-                isLoading = isLoading,
-                errorMessage = errorMessage,
-                isCompleted = isCompleted,
-            )
+            BaseViewState(isLoading = isLoading, error = error, isCompleted = isCompleted)
         )
     }
 
@@ -55,21 +55,21 @@ class PostCreateEditViewModel @Inject constructor(
     }
     val post: LiveData<PostDetail?> = _post
 
-    private val _markdownElement = MutableLiveData<Event<Markdown.Element>>()
-    val markdownElement: LiveData<Event<Markdown.Element>> = _markdownElement
+    private val _markdownElement = MutableLiveData<Markdown.Element>()
+    val markdownElement: LiveData<Markdown.Element> = _markdownElement
 
-    fun markdownTagHandler(element: Markdown.Element) {
-        _markdownElement.value = Event(element)
+    override fun onItemClicked(element: Markdown.Element) {
+        _markdownElement.value = element
     }
 
     private fun handleResult(result: Result<PostDetail?>): PostDetail? {
         updateState(isLoading = false)
         return when (result) {
-            is Result.Success -> result.data
             is Result.Loading -> null
+            is Result.Success -> result.data
             is Result.Error -> {
                 Log.e(TAG, "handleResult: ${result.exception.message}", result.exception)
-                updateState(errorMessage = result.exception.message.toString())
+                updateState(error = result.exception)
                 null
             }
         }
@@ -91,12 +91,16 @@ class PostCreateEditViewModel @Inject constructor(
 
         if (result is Result.Error) {
             Log.e(TAG, "createPost failed: ${result.exception.message}", result.exception)
-            updateState(isLoading = false, errorMessage = result.exception.message.toString())
-        } else {
-            inputTitle.value = ""
-            inputContent.value = ""
+            updateState(error = result.exception)
+            return@launch
+        }
+
+        inputTitle.value = ""
+        inputContent.value = ""
+        updateState(isCompleted = true)
+
+        CoroutineScope(Dispatchers.IO).launch {
             postRepository.refreshPosts()
-            updateState(isLoading = false, isCompleted = true)
         }
     }
 }
