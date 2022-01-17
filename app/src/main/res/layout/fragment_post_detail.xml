@@ -186,7 +186,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:elevation="8dp"
-            android:hint="Say something about this post"
+            android:hint="Say something to this post"
             android:visibility="@{viewModel.post == null ? View.GONE : View.VISIBLE}"
             app:boxBackgroundColor="@null"
             app:endIconClick="@{() -> viewModel.uploadComment()}"

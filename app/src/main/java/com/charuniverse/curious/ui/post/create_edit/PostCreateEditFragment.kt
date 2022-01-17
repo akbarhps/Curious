@@ -45,8 +45,14 @@ class PostCreateEditFragment : Fragment(R.layout.fragment_post_create_edit) {
         }
 
         viewModel.post.observe(viewLifecycleOwner, {
-            binding.title.setText(it?.title ?: "")
-            binding.content.setText(it?.content ?: "")
+            //TODO: refactor this
+            if (args.postId == null) {
+                binding.title.setText("")
+                binding.content.setText("")
+            } else {
+                binding.title.setText(it?.title ?: "")
+                binding.content.setText(it?.content ?: "")
+            }
         })
 
         setupEventObserver()

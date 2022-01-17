@@ -31,20 +31,20 @@
             <TextView
                 android:id="@+id/textView2"
                 android:layout_width="0dp"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
-                android:layout_weight="3"
+                android:layout_weight="1"
                 android:ellipsize="end"
-                android:gravity="center|start"
                 android:maxLines="1"
                 android:text="@{comment.author.username}" />
 
             <TextView
                 android:id="@+id/textView3"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:gravity="center"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 app:timestamp="@{comment.createdAt}" />
 
         </LinearLayout>

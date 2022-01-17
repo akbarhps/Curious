@@ -37,6 +37,7 @@ class PostRemoteDataSource(
     fun observeUserPosts(): LiveData<Result<List<Post>>> = observableUserPosts
 
     suspend fun refreshUserPosts(userId: String) = withContext(Dispatchers.Main) {
+        Cache.clearCache()
         observableUserPosts.value = findByUserId(userId)!!
     }
 
@@ -72,7 +73,7 @@ class PostRemoteDataSource(
                     post.comments?.map { (_, comment) ->
                         var commentAuthor = Cache.users[comment.createdBy]
                         if (commentAuthor == null) {
-                            val userDoc = userRef.child(post.createdBy).get().await()
+                            val userDoc = userRef.child(comment.createdBy).get().await()
                             commentAuthor = userDoc.getValue(User::class.java)!!
                         }
                         comment.author = commentAuthor
@@ -105,7 +106,7 @@ class PostRemoteDataSource(
                 post.comments?.toSortedMap()?.map { (_, comment) ->
                     var commentAuthor = Cache.users[comment.createdBy]
                     if (commentAuthor == null) {
-                        val userDoc = userRef.child(post.createdBy).get().await()
+                        val userDoc = userRef.child(comment.createdBy).get().await()
                         commentAuthor = userDoc.getValue(User::class.java)!!
                     }
                     comment.author = commentAuthor
