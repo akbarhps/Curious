@@ -7,7 +7,6 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -31,6 +30,7 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
         viewModel.setPostId(args.postId)
         val postCommentsAdapter = PostCommentsAdapter(viewModel)
 
+        //TODO: refactor this
         var postTitle = ""
 
         binding = FragmentPostDetailBinding.bind(view).also {
@@ -55,6 +55,12 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
     }
 
     private fun setupEventObserver() {
+        viewModel.selectedUserId.observe(viewLifecycleOwner, EventObserver {
+            val dest = PostDetailFragmentDirections
+                .actionGlobalProfileFragment(it)
+            findNavController().navigate(dest)
+        })
+
         viewModel.viewState.observe(viewLifecycleOwner, EventObserver { state ->
             binding.scrollLayout.isRefreshing = state.isLoading
 

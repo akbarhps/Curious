@@ -11,7 +11,6 @@ import com.charuniverse.curious.data.repository.PostRepository
 import com.charuniverse.curious.data.repository.UserRepository
 import com.charuniverse.curious.ui.post.BaseViewState
 import com.charuniverse.curious.util.Event
-import com.charuniverse.curious.util.Preferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -65,11 +64,8 @@ class ProfileViewModel @Inject constructor(
         else MutableLiveData((result as Result.Success).data)
     }
 
-    init {
-        viewModelScope.launch {
-            // TODO: change this to dynamic value
-            userRepository.refreshObservableUser(Preferences.userId)
-        }
+    fun setUserId(userId: String) = viewModelScope.launch {
+        userRepository.refreshObservableUser(userId)
     }
 
     fun toggleLove(postId: String) = viewModelScope.launch {

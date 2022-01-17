@@ -40,6 +40,8 @@
                 android:id="@+id/imageView"
                 android:layout_width="32dp"
                 android:layout_height="match_parent"
+                android:background="?selectableItemBackgroundBorderless"
+                android:onClick="@{() -> viewModel.setSelectedUserId(post.author.id)}"
                 app:loadCircular="@{post.author.profilePictureURL}" />
 
             <TextView

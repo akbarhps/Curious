@@ -66,6 +66,13 @@ class PostDetailViewModel @Inject constructor(
         }
     }
 
+    private val _selectedUserId = MutableLiveData<Event<String>>()
+    val selectedUserId: LiveData<Event<String>> = _selectedUserId
+
+    fun setSelectedUserId(userId: String) {
+        _selectedUserId.value = Event(userId)
+    }
+
     fun refreshPost() = CoroutineScope(Dispatchers.IO).launch {
         postRepository.refreshPosts()
     }

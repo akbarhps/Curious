@@ -23,15 +23,14 @@ class MainActivity : AppCompatActivity() {
 
     private val bottomNavFragments = setOf(
         R.id.postFeedFragment,
-//            R.id.postCreateFragment,
         R.id.profileFragment,
     )
 
-    private val hideToolbarOnFragment = listOf(
+    private val hideToolbarOnFragment = setOf(
         R.id.loginFragment,
     )
 
-    private val hideBottomNavOnFragment = listOf(
+    private val hideBottomNavOnFragment = setOf(
         R.id.loginFragment,
         R.id.postDetailFragment,
         R.id.postCreateEditFragment,

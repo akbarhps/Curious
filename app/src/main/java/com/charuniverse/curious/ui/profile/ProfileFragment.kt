@@ -1,7 +1,6 @@
 package com.charuniverse.curious.ui.profile
 
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -10,9 +9,12 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.charuniverse.curious.R
 import com.charuniverse.curious.databinding.FragmentProfileBinding
+import com.charuniverse.curious.ui.MainActivity
 import com.charuniverse.curious.util.EventObserver
+import com.charuniverse.curious.util.Preferences
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -22,9 +24,17 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
     private val viewModel: ProfileViewModel by viewModels()
 
+    private val args: ProfileFragmentArgs by navArgs()
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setHasOptionsMenu(true)
+        if (args.userId != null && args.userId != Preferences.userId) {
+            setHasOptionsMenu(false)
+        } else {
+            setHasOptionsMenu(true)
+        }
+
+        viewModel.setUserId(args.userId ?: Preferences.userId)
 
         val adapter = UserPostAdapter(viewModel)
         binding = FragmentProfileBinding.bind(view).apply {

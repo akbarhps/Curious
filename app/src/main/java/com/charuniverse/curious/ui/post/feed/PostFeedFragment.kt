@@ -8,6 +8,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.charuniverse.curious.R
 import com.charuniverse.curious.databinding.FragmentPostFeedBinding
+import com.charuniverse.curious.ui.post.detail.PostDetailFragmentDirections
 import com.charuniverse.curious.util.EventObserver
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -37,6 +38,11 @@ class PostFeedFragment : Fragment(R.layout.fragment_post_feed) {
     }
 
     private fun setupEventObserver() {
+        viewModel.selectedUserId.observe(viewLifecycleOwner, EventObserver {
+            val dest = PostDetailFragmentDirections
+                .actionGlobalProfileFragment(it)
+            findNavController().navigate(dest)
+        })
         viewModel.selectedPostId.observe(viewLifecycleOwner, EventObserver {
             val dest = PostFeedFragmentDirections.actionPostFeedFragmentToPostDetailFragment(it)
             findNavController().navigate(dest)

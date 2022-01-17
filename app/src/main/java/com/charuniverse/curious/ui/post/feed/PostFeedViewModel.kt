@@ -38,6 +38,13 @@ class PostFeedViewModel @Inject constructor(
         _selectedPostId.value = Event(postId)
     }
 
+    private val _selectedUserId = MutableLiveData<Event<String>>()
+    val selectedUserId: LiveData<Event<String>> = _selectedUserId
+
+    fun setSelectedUserId(userId: String) {
+        _selectedUserId.value = Event(userId)
+    }
+
     init {
         refreshPosts()
     }
@@ -62,6 +69,7 @@ class PostFeedViewModel @Inject constructor(
             }
             is Result.Error -> {
                 Log.e(TAG, "handleResult: ${result.exception.message}", result.exception)
+                updateViewState(error = result.exception)
                 MutableLiveData(listOf())
             }
         }
