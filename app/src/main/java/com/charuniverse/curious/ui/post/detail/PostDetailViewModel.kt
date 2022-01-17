@@ -30,18 +30,18 @@ class PostDetailViewModel @Inject constructor(
 
     private fun updateState(
         isLoading: Boolean = false,
-        isCompleted: Boolean = false,
-        fetchPostError: String? = null,
-        fetchCommentsError: String? = null,
-        uploadCommentError: String? = null,
+        postError: String? = null,
+        commentError: String? = null,
+        uploadCommentSuccess: Boolean = false,
+        deletePostSuccess: Boolean = false,
     ) {
         _viewState.value = Event(
             PostDetailViewState(
                 isLoading = isLoading,
-                isDeletePostComplete = isCompleted,
-                fetchPostError = fetchPostError,
-                fetchCommentsError = fetchCommentsError,
-                uploadCommentError = uploadCommentError,
+                postError = postError,
+                commentError = commentError,
+                uploadCommentSuccess = uploadCommentSuccess,
+                deletePostSuccess = deletePostSuccess,
             )
         )
     }
@@ -50,7 +50,7 @@ class PostDetailViewModel @Inject constructor(
 
     fun setPostId(id: String) {
         if (id.isBlank()) {
-            updateState(fetchPostError = "No Post Id Provided")
+            updateState(postError = "No Post Id Provided")
             return
         }
 
@@ -87,13 +87,13 @@ class PostDetailViewModel @Inject constructor(
         if (result is Result.Error) {
             Log.e(TAG, "handleResult: ${result.exception.message}", result.exception)
 
-            updateState(fetchPostError = result.exception.message.toString())
+            updateState(postError = result.exception.message.toString())
             return null
         }
 
         val data = (result as Result.Success).data
         viewModelScope.launch { commentRepository.refreshComments(data.id) }
-//        updateState(isLoading = false)
+        updateState(isLoading = false)
         return data
     }
 
@@ -101,12 +101,11 @@ class PostDetailViewModel @Inject constructor(
         if (result is Result.Error) {
             Log.e(TAG, "handleCommentsResult: ${result.exception.message}", result.exception)
 
-            updateState(fetchCommentsError = result.exception.message.toString())
+            updateState(commentError = result.exception.message.toString())
             return MutableLiveData(listOf())
         }
 
         updateState(isLoading = false)
-        Log.i(TAG, "handleCommentsResult: Berhasil di hendel")
         return MutableLiveData((result as Result.Success).data)
     }
 
@@ -124,22 +123,22 @@ class PostDetailViewModel @Inject constructor(
         if (result is Result.Error) {
             Log.e(TAG, "uploadComment: ${result.exception.message}", result.exception)
 
-            updateState(uploadCommentError = result.exception.message.toString())
+            updateState(commentError = result.exception.message.toString())
             return@launch
         }
 
-        Log.i(TAG, "uploadComment: Berhasil upload, saatnya refresh")
+        updateState(uploadCommentSuccess = true)
         commentRepository.refreshComments(postId)
     }
 
     fun deletePost() = viewModelScope.launch {
         when (val result = postRepository.delete(_postId.value!!)) {
             is Result.Loading -> updateState(isLoading = true)
-            is Result.Success -> updateState(isCompleted = true)
+            is Result.Success -> updateState(deletePostSuccess = true)
             is Result.Error -> {
                 Log.e(TAG, "deletePost: ${result.exception.message}", result.exception)
 
-                updateState(fetchPostError = result.exception.message.toString())
+                updateState(postError = result.exception.message.toString())
             }
         }
     }

@@ -13,7 +13,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.charuniverse.curious.R
 import com.charuniverse.curious.databinding.FragmentPostDetailBinding
-import com.charuniverse.curious.ui.dialog.Dialogs
 import com.charuniverse.curious.ui.post.PostViewModel
 import com.charuniverse.curious.util.EventObserver
 import com.charuniverse.curious.util.Preferences
@@ -56,18 +55,23 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
         })
 
         viewModel.viewState.observe(viewLifecycleOwner, EventObserver {
-            Dialogs.toggleProgressBar(it.isLoading)
+            binding.scrollLayout.isRefreshing = it.isLoading
 
-            if (it.fetchPostError != null) {
-                Toast.makeText(requireContext(), it.fetchPostError, Toast.LENGTH_SHORT).show()
+            if (it.postError != null) {
+                Toast.makeText(requireContext(), it.postError, Toast.LENGTH_SHORT).show()
             }
 
-            if (it.isUploadCommentComplete) {
-                Toast.makeText(requireContext(), "Posted!", Toast.LENGTH_SHORT).show()
+            if (it.commentError != null) {
+                Toast.makeText(requireContext(), it.postError, Toast.LENGTH_SHORT).show()
+            }
+
+            if (it.uploadCommentSuccess) {
                 binding.comment.setText("")
+                binding.comment.clearFocus()
+                Toast.makeText(requireContext(), "Posted!", Toast.LENGTH_SHORT).show()
             }
 
-            if (it.isDeletePostComplete) {
+            if (it.deletePostSuccess) {
                 postViewModel.refresh()
                 findNavController().navigateUp()
             }
