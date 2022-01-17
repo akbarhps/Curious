@@ -8,7 +8,6 @@ import com.charuniverse.curious.data.model.PostDetail
 import com.charuniverse.curious.data.repository.PostRepository
 import com.charuniverse.curious.util.Event
 import com.charuniverse.curious.util.Markdown
-import com.charuniverse.curious.util.Preferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -83,20 +82,18 @@ class PostCreateEditViewModel @Inject constructor(
             content = inputContent.value.toString().trim().replace("\n", "  \n"),
         )
 
-        val oldPost = _post.value
-        if (oldPost != null) {
-            post.id = oldPost.id
-            post.createdAt = oldPost.createdAt
-            post.updatedAt = System.currentTimeMillis()
-        }
+        val result = _post.value?.let {
+            post.id = it.id
+            postRepository.update(post)
+        } ?: postRepository.save(post)
 
-        val result = postRepository.save(post)
         if (result is Result.Error) {
             Log.e(TAG, "createPost failed: ${result.exception.message}", result.exception)
             updateState(isLoading = false, errorMessage = result.exception.message.toString())
         } else {
             inputTitle.value = ""
             inputContent.value = ""
+            postRepository.refreshPosts()
             updateState(isLoading = false, isCompleted = true)
         }
     }

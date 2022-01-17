@@ -140,6 +140,20 @@ class PostRemoteDataSource(
         }
     }
 
+    suspend fun update(post: Post): Result<Unit> = withContext(context) {
+        val updates: MutableMap<String, Any> = HashMap()
+
+        return@withContext try {
+            updates["${post.id}/title"] = post.title
+            updates["${post.id}/content"] = post.content
+            updates["${post.id}/updatedAt"] = System.currentTimeMillis()
+            postRef.updateChildren(updates)
+            Success(Unit)
+        } catch (e: Exception) {
+            Error(e)
+        }
+    }
+
     suspend fun delete(postId: String): Result<Unit> = withContext(context) {
         return@withContext try {
             postRef.child(postId).setValue(null).await()
@@ -176,9 +190,9 @@ class PostRemoteDataSource(
             }
         }
 
-    suspend fun addLove(postId: String): Result<Unit> = withContext(context) {
+    suspend fun toggleLove(postId: String): Result<Unit> = withContext(context) {
         val uid = Preferences.userId
-        val updates: MutableMap<String, Any> = HashMap()
+        val updates: MutableMap<String, Any?> = HashMap()
 
         return@withContext try {
             val hasLike = postRef.child("$postId/lovers/$uid").get().await()
@@ -186,26 +200,12 @@ class PostRemoteDataSource(
             if (hasLike.getValue(Long::class.java) == null) {
                 updates["$postId/lovers/$uid"] = System.currentTimeMillis()
                 updates["$postId/loveCount"] = ServerValue.increment(1)
-                postRef.updateChildren(updates)
-            }
-            Success(Unit)
-        } catch (e: Exception) {
-            Error(e)
-        }
-    }
-
-    suspend fun deleteLove(postId: String): Result<Unit> = withContext(context) {
-        val uid = Preferences.userId
-        val updates: MutableMap<String, Any?> = HashMap()
-
-        return@withContext try {
-            val hasLike = postRef.child("$postId/lovers/$uid").get().await()
-
-            if (hasLike.getValue(Long::class.java) != null) {
+            } else {
                 updates["$postId/lovers/$uid"] = null
                 updates["$postId/loveCount"] = ServerValue.increment(-1)
-                postRef.updateChildren(updates)
             }
+
+            postRef.updateChildren(updates)
             Success(Unit)
         } catch (e: Exception) {
             Error(e)

@@ -1,4 +1,4 @@
-package com.charuniverse.curious.ui.post
+package com.charuniverse.curious.ui.post.feed
 
 import android.util.Log
 import androidx.lifecycle.*
@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class PostViewModel @Inject constructor(
+class PostFeedViewModel @Inject constructor(
     private val postRepository: PostRepository
 ) : ViewModel() {
 
@@ -24,9 +24,6 @@ class PostViewModel @Inject constructor(
 
     private val _errorMessage = MutableLiveData<Event<String>>()
     val errorMessage: LiveData<Event<String>> = _errorMessage
-
-    private val _forceRefresh = MutableLiveData<Event<Boolean>>()
-    val forceRefresh: LiveData<Event<Boolean>> = _forceRefresh
 
     private val _postList: LiveData<List<PostDetail>> = postRepository
         .observePosts().distinctUntilChanged()
@@ -44,14 +41,15 @@ class PostViewModel @Inject constructor(
         refreshData()
     }
 
-    fun refresh() {
-        _forceRefresh.value = Event(true)
-    }
-
     fun refreshData() = viewModelScope.launch {
         _isLoading.value = true
         postRepository.refreshPosts()
         _isLoading.value = false
+    }
+
+    fun togglePostLove(postId: String) = viewModelScope.launch {
+        postRepository.toggleLove(postId)
+        postRepository.refreshPosts()
     }
 
     private fun handleResult(result: Result<List<PostDetail>>): LiveData<List<PostDetail>> {

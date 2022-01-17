@@ -54,11 +54,8 @@ class PostDetailViewModel @Inject constructor(
     }
 
     private val _post = _postId.switchMap { id ->
-        postRepository.observePost(id).map {
-            handlePostResult(it)
-        }
+        postRepository.observePost(id).map { handlePostResult(it) }
     }
-
     val post: LiveData<PostDetail?> = _post
 
     // two way data binding
@@ -80,24 +77,16 @@ class PostDetailViewModel @Inject constructor(
         postRepository.refreshPosts()
     }
 
-    fun handlePostLove(isLoved: Boolean) = viewModelScope.launch {
-        val postId = _postId.value!!
-
-        if (isLoved) {
-            postRepository.deleteLove(postId)
-        } else {
-            postRepository.addLove(postId)
-        }
-
-        postRepository.refreshPosts()
+    fun togglePostLove() = viewModelScope.launch {
+        postRepository.toggleLove(_postId.value!!)
+        refreshPost()
     }
 
     fun uploadComment() = viewModelScope.launch {
         updateState(isLoading = true)
 
-        val postId = _postId.value!!
         val comment = Comment(
-            postId = postId,
+            postId = _postId.value!!,
             content = inputComment.value.toString().trim().replace("\n", "  \n"),
         )
 
@@ -109,18 +98,18 @@ class PostDetailViewModel @Inject constructor(
             return@launch
         }
 
+        refreshPost()
         updateState(uploadCommentSuccess = true)
-        postRepository.refreshPosts()
     }
 
     fun deletePost() = viewModelScope.launch {
-        when (val result = postRepository.delete(_postId.value!!)) {
-            is Result.Loading -> updateState(isLoading = true)
-            is Result.Success -> updateState(deletePostSuccess = true)
-            is Result.Error -> {
-                Log.e(TAG, "deletePost: ${result.exception.message}", result.exception)
-                updateState(postError = result.exception.message.toString())
-            }
+        val result = postRepository.delete(_postId.value!!)
+        if (result is Result.Error) {
+            Log.e(TAG, "deletePost: ${result.exception.message}", result.exception)
+            updateState(postError = result.exception.message.toString())
+        } else {
+            refreshPost()
+            updateState(deletePostSuccess = true)
         }
     }
 }

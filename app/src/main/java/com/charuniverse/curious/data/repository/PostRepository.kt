@@ -39,16 +39,16 @@ class PostRepository(
         return remoteDataSource.save(post)
     }
 
+    suspend fun update(post: Post): Result<Unit> {
+        return remoteDataSource.update(post)
+    }
+
     suspend fun delete(postId: String): Result<Unit> {
         return remoteDataSource.delete(postId)
     }
 
-    suspend fun addLove(postId: String): Result<Unit> {
-        return remoteDataSource.addLove(postId)
-    }
-
-    suspend fun deleteLove(postId: String): Result<Unit> {
-        return remoteDataSource.deleteLove(postId)
+    suspend fun toggleLove(postId: String): Result<Unit> {
+        return remoteDataSource.toggleLove(postId)
     }
 
     suspend fun addComment(comment: Comment): Result<Unit> {

@@ -8,12 +8,10 @@ import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.charuniverse.curious.R
 import com.charuniverse.curious.databinding.FragmentPostDetailBinding
-import com.charuniverse.curious.ui.post.PostViewModel
 import com.charuniverse.curious.util.EventObserver
 import com.charuniverse.curious.util.Preferences
 import dagger.hilt.android.AndroidEntryPoint
@@ -21,8 +19,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
 
-    private val postViewModel: PostViewModel by activityViewModels()
-    private val viewModel: PostDetailViewModel by viewModels()
+    private val viewModel: PostDetailViewModel by activityViewModels()
     private val args: PostDetailFragmentArgs by navArgs()
 
     private lateinit var binding: FragmentPostDetailBinding
@@ -48,10 +45,6 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
     }
 
     private fun setupEventObserver() {
-        postViewModel.forceRefresh.observe(viewLifecycleOwner, EventObserver {
-            postViewModel.refreshData()
-        })
-
         viewModel.viewState.observe(viewLifecycleOwner, EventObserver {
             binding.scrollLayout.isRefreshing = it.isLoading
 
@@ -70,7 +63,6 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
             }
 
             if (it.deletePostSuccess) {
-                postViewModel.refresh()
                 findNavController().navigateUp()
             }
         })

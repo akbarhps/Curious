@@ -14,7 +14,6 @@ import androidx.navigation.ui.onNavDestinationSelected
 import com.charuniverse.curious.R
 import com.charuniverse.curious.databinding.FragmentPostCreateEditBinding
 import com.charuniverse.curious.ui.dialog.Dialogs
-import com.charuniverse.curious.ui.post.PostViewModel
 import com.charuniverse.curious.util.EventObserver
 import com.charuniverse.curious.util.Markdown
 import dagger.hilt.android.AndroidEntryPoint
@@ -22,7 +21,6 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class PostCreateEditFragment : Fragment(R.layout.fragment_post_create_edit) {
 
-    private val postViewModel: PostViewModel by activityViewModels()
     private val viewModel: PostCreateEditViewModel by activityViewModels()
     private val args: PostCreateEditFragmentArgs by navArgs()
 
@@ -56,6 +54,13 @@ class PostCreateEditFragment : Fragment(R.layout.fragment_post_create_edit) {
 
     private fun setupEventObserver() {
         viewModel.markdownElement.observe(viewLifecycleOwner, EventObserver {
+            if (it.tag == Markdown.Tag.LINK) {
+                Toast.makeText(
+                    requireContext(), "Not yet implemented, please use: \n[text](link)",
+                    Toast.LENGTH_LONG
+                ).show()
+                return@EventObserver
+            }
             handleMarkdownTagEvent(it)
         })
 
@@ -67,7 +72,6 @@ class PostCreateEditFragment : Fragment(R.layout.fragment_post_create_edit) {
             }
 
             if (it.isCompleted) {
-                postViewModel.refresh()
                 findNavController().navigateUp()
             }
         })

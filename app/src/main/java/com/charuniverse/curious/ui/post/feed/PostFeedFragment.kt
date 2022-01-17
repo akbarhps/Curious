@@ -8,27 +8,29 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.charuniverse.curious.R
 import com.charuniverse.curious.databinding.FragmentPostFeedBinding
-import com.charuniverse.curious.ui.post.PostViewModel
 import com.charuniverse.curious.util.EventObserver
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class PostFeedFragment : Fragment(R.layout.fragment_post_feed) {
 
-    private val viewModel: PostViewModel by activityViewModels()
+    private val viewModel: PostFeedViewModel by activityViewModels()
 
     private lateinit var binding: FragmentPostFeedBinding
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val postAdapter = PostAdapter(viewModel)
+
         binding = FragmentPostFeedBinding.bind(view).also {
             it.lifecycleOwner = this
-            it.postViewModel = viewModel
-            it.postsList.adapter = PostAdapter(viewModel)
+            it.viewModel = viewModel
+            it.postsList.adapter = postAdapter
         }
 
         viewModel.postList.observe(viewLifecycleOwner, {
-            (binding.postsList.adapter as PostAdapter).submitList(it)
+            postAdapter.submitList(it)
         })
 
         setupEventObserver()
@@ -38,9 +40,6 @@ class PostFeedFragment : Fragment(R.layout.fragment_post_feed) {
         viewModel.postId.observe(viewLifecycleOwner, EventObserver {
             val dest = PostFeedFragmentDirections.actionPostFeedFragmentToPostDetailFragment(it)
             findNavController().navigate(dest)
-        })
-        viewModel.forceRefresh.observe(viewLifecycleOwner, EventObserver {
-            viewModel.refreshData()
         })
         viewModel.errorMessage.observe(viewLifecycleOwner, EventObserver {
             Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
