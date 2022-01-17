@@ -75,6 +75,11 @@ class PostDetailViewModel @Inject constructor(
         refreshPost()
     }
 
+    fun deleteComment(commentId: String) = viewModelScope.launch {
+        postRepository.deleteComment(_postId.value!!, commentId)
+        refreshPost()
+    }
+
     fun deletePost() = viewModelScope.launch {
         val result = postRepository.delete(_postId.value!!)
         if (result is Result.Error) {

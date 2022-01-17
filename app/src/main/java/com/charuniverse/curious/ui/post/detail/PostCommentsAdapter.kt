@@ -2,9 +2,11 @@ package com.charuniverse.curious.ui.post.detail
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.charuniverse.curious.R
 import com.charuniverse.curious.data.model.CommentDetail
 import com.charuniverse.curious.databinding.ViewPostCommentItemBinding
 
@@ -13,7 +15,7 @@ class PostCommentsAdapter(private val viewModel: PostDetailViewModel) :
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
-        holder.bind(item)
+        holder.bind(viewModel, item)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -31,9 +33,22 @@ class PostCommentsAdapter(private val viewModel: PostDetailViewModel) :
             }
         }
 
-        fun bind(item: CommentDetail) = binding.apply {
-            comment = item
-//            viewModel = viewModel
+        fun bind(viewModel: PostDetailViewModel, comment: CommentDetail) = binding.apply {
+            this.comment = comment
+
+            ivOpenCommentMenu.setOnClickListener {
+                val menu = PopupMenu(it.context, it)
+                menu.menuInflater.inflate(R.menu.menu_post_detail, menu.menu)
+                menu.setOnMenuItemClickListener { item ->
+                    when (item.itemId) {
+                        R.id.postCreateEditFragment -> {}
+                        R.id.delete_post -> viewModel.deleteComment(comment.id)
+                    }
+                    true
+                }
+                menu.show()
+            }
+
             executePendingBindings()
         }
     }

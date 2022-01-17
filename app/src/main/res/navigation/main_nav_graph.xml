@@ -80,7 +80,7 @@
     <fragment
         android:id="@+id/markdownPreviewFragment"
         android:name="com.charuniverse.curious.ui.markdown.MarkdownPreviewFragment"
-        android:label="MarkdownPreviewFragment">
+        android:label="Preview">
         <argument
             android:name="title"
             android:defaultValue="@null"

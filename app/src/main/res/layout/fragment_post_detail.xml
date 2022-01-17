@@ -74,6 +74,7 @@
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
                         android:text="@{viewModel.post.title}"
+                        android:textIsSelectable="true"
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
@@ -84,6 +85,7 @@
                         android:nestedScrollingEnabled="false"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
+                        android:textIsSelectable="true"
                         android:textSize="14sp"
                         app:renderMarkdown="@{viewModel.post.content}" />
 
@@ -173,7 +175,7 @@
             android:id="@+id/fab_open_create_comment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
+            android:layout_margin="12dp"
             android:src="@drawable/ic_baseline_comment_24"
             android:tooltipText="Comment this post"
             app:backgroundTint="@color/white"
