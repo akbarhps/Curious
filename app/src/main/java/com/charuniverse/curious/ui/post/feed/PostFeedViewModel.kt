@@ -50,7 +50,6 @@ class PostFeedViewModel @Inject constructor(
     }
 
     fun refreshPosts() = viewModelScope.launch {
-        updateViewState(isLoading = true)
         postRepository.refreshPosts()
     }
 
@@ -60,11 +59,14 @@ class PostFeedViewModel @Inject constructor(
     }
 
     private fun handleResult(result: Result<List<PostDetail>>): LiveData<List<PostDetail>> {
-        updateViewState(isLoading = false)
         return when (result) {
-            is Result.Loading -> MutableLiveData(listOf()) // this never occur
+            is Result.Loading -> {
+                updateViewState(isLoading = true)
+                MutableLiveData(_posts.value ?: listOf())
+            }
             is Result.Success -> {
                 val data = result.data.sortedByDescending { it.createdAt }
+                updateViewState(isLoading = false)
                 MutableLiveData(data)
             }
             is Result.Error -> {

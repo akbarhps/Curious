@@ -32,7 +32,8 @@ class PostRemoteDataSource(
 
     suspend fun refreshPosts() = withContext(Dispatchers.Main) {
         Cache.clearCache()
-        observablePosts.value = findAll() ?: Success(listOf<PostDetail>())
+        observablePosts.value = Loading
+        observablePosts.value = findAll()!!
     }
 
     fun observeUserPosts(userId: String): LiveData<Result<List<PostDetail>>> {
@@ -135,12 +136,14 @@ class PostRemoteDataSource(
     suspend fun update(post: Post): Result<Unit> = withContext(context) {
         return@withContext try {
             val updates: MutableMap<String, Any> = HashMap()
+
             postRef.child(post.id).get().await().getValue(Post::class.java)
                 ?: return@withContext Error(NotFound("Post not found"))
 
             updates["${post.id}/title"] = post.title
             updates["${post.id}/content"] = post.content
             updates["${post.id}/updatedAt"] = System.currentTimeMillis()
+
             postRef.updateChildren(updates)
             Success(Unit)
         } catch (e: Exception) {
