@@ -53,6 +53,13 @@ class ProfileViewModel @Inject constructor(
     }
     val userPosts: LiveData<List<PostDetail>> = _userPosts
 
+    private val _selectedPostId = MutableLiveData<Event<String>>()
+    val selectedPostId: LiveData<Event<String>> = _selectedPostId
+
+    fun setSelectedPostId(postId: String) {
+        _selectedPostId.value = Event(postId)
+    }
+
     private fun handleUserPostResult(result: Result<List<PostDetail>>): LiveData<List<PostDetail>> {
         return if (result is Result.Error) MutableLiveData(listOf())
         else MutableLiveData((result as Result.Success).data)

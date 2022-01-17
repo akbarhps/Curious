@@ -37,6 +37,7 @@ class MainActivity : AppCompatActivity() {
         R.id.postCreateEditFragment,
         R.id.commentCreateEditFragment,
         R.id.markdownPreviewFragment,
+        R.id.profileEditFragment,
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {

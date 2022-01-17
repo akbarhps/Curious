@@ -5,6 +5,7 @@ data class User(
     var username: String = "",
     var displayName: String = "",
     var email: String = "",
+    var isVerified: Boolean = false,
     var profilePictureURL: String = "",
     var createdAt: Long = System.currentTimeMillis(),
     var updatedAt: Long? = null,

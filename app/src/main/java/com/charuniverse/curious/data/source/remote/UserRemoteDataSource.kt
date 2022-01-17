@@ -81,7 +81,7 @@ class UserRemoteDataSource(
             val doc = userRef.child(userId).get().await()
 
             val user = doc.getValue(User::class.java)
-                ?: throw IllegalArgumentException("User not found")
+                ?: throw IllegalArgumentException(NotFound("User not found"))
 
             Cache.users[user.id] = user
             Success(user)

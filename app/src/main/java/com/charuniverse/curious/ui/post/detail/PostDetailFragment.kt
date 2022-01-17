@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.charuniverse.curious.R
@@ -20,7 +21,7 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
 
-    private val viewModel: PostDetailViewModel by activityViewModels()
+    private val viewModel: PostDetailViewModel by viewModels()
     private val args: PostDetailFragmentArgs by navArgs()
 
     private lateinit var binding: FragmentPostDetailBinding

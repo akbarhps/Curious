@@ -62,9 +62,20 @@ class PostRemoteDataSource(
         }
     }
 
+    // TODO: move to user remote data source maybe?
+    private suspend fun findUser(userId: String): User? {
+        var user = Cache.users[userId]
+        if (user == null) {
+            val userDoc = userRef.child(userId).get().await()
+            user = userDoc.getValue(User::class.java)
+        }
+        return user
+    }
+
     suspend fun findAll(): Result<List<PostDetail>> = withContext(context) {
         return@withContext try {
-            val docs = postRef.get().await()
+            val docs = postRef.orderByChild("createdAt").get().await()
+
             val result = docs.children.map { snapshot ->
                 val post = snapshot.getValue(PostDetail::class.java)!!
                 post.author = findUser(post.createdBy)
@@ -85,6 +96,7 @@ class PostRemoteDataSource(
     suspend fun findById(postId: String): Result<PostDetail> = withContext(context) {
         return@withContext try {
             val snapshot = postRef.child(postId).get().await()
+
             val result = snapshot.getValue(PostDetail::class.java)!!.let { post ->
                 post.author = findUser(post.createdBy)
                 post.comments?.toSortedMap()?.map { (_, comment) ->
@@ -98,16 +110,6 @@ class PostRemoteDataSource(
         } catch (e: Exception) {
             Error(e)
         }
-    }
-
-    // TODO: move to user remote data source maybe?
-    private suspend fun findUser(userId: String): User? {
-        var user = Cache.users[userId]
-        if (user == null) {
-            val userDoc = userRef.child(userId).get().await()
-            user = userDoc.getValue(User::class.java)
-        }
-        return user
     }
 
     suspend fun findByUserId(userId: String): Result<List<Post>> = withContext(context) {

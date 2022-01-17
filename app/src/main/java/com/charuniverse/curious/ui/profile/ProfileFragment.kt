@@ -1,6 +1,7 @@
 package com.charuniverse.curious.ui.profile
 
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -41,6 +42,12 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     }
 
     private fun setupEventObserver() {
+        viewModel.selectedPostId.observe(viewLifecycleOwner, EventObserver {
+            val dest = ProfileFragmentDirections
+                .actionProfileFragmentToPostDetailFragment(it)
+            findNavController().navigate(dest)
+        })
+
         viewModel.viewState.observe(viewLifecycleOwner, EventObserver { state ->
             binding.swipeLayout.isRefreshing = state.isLoading
 

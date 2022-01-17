@@ -5,6 +5,8 @@
 
     <data>
 
+        <import type="android.view.View" />
+
         <import type="com.charuniverse.curious.ui.profile.ProfileViewModel" />
 
         <import type="com.charuniverse.curious.data.entity.User" />
@@ -21,7 +23,8 @@
     <com.charuniverse.curious.util.ScrollChildSwipeRefreshLayout
         android:id="@+id/swipeLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        tools:context=".ui.profile.ProfileFragment">
 
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
@@ -30,8 +33,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                tools:context=".ui.profile.ProfileFragment">
+                android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -46,19 +48,35 @@
                         android:src="@drawable/ic_baseline_person_24"
                         app:loadCircular="@{user.profilePictureURL}" />
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="@{user.displayName}"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:layout_marginTop="16dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="@{user.displayName}"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center"
+                            android:layout_marginStart="8dp"
+                            android:src="@drawable/ic_baseline_verified_24"
+                            android:visibility="@{user.isVerified ? View.VISIBLE : View.GONE}" />
+
+                    </LinearLayout>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="@{`@` + user.username}" />
+                        android:text="@{`@`+user.username}" />
 
                 </LinearLayout>
 
