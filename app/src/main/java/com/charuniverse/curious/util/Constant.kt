@@ -1,7 +1,6 @@
 package com.charuniverse.curious.util
 
 import com.charuniverse.curious.BuildConfig
-import com.charuniverse.curious.data.model.PostDetail
 
 object Constant {
 

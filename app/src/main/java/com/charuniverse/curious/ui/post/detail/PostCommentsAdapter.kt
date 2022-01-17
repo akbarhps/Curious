@@ -5,11 +5,11 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.charuniverse.curious.data.entity.Comment
+import com.charuniverse.curious.data.model.CommentDetail
 import com.charuniverse.curious.databinding.ViewPostCommentItemBinding
 
 class PostCommentsAdapter(private val viewModel: PostDetailViewModel) :
-    ListAdapter<Comment, PostCommentsAdapter.ViewHolder>(TaskDiffCallback()) {
+    ListAdapter<CommentDetail, PostCommentsAdapter.ViewHolder>(TaskDiffCallback()) {
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
@@ -31,20 +31,20 @@ class PostCommentsAdapter(private val viewModel: PostDetailViewModel) :
             }
         }
 
-        fun bind(item: Comment) {
-            binding.comment = item
-//            binding.viewModel = viewModel
-            binding.executePendingBindings()
+        fun bind(item: CommentDetail) = binding.apply {
+            comment = item
+//            viewModel = viewModel
+            executePendingBindings()
         }
     }
 }
 
-class TaskDiffCallback : DiffUtil.ItemCallback<Comment>() {
-    override fun areItemsTheSame(oldItem: Comment, newItem: Comment): Boolean {
+class TaskDiffCallback : DiffUtil.ItemCallback<CommentDetail>() {
+    override fun areItemsTheSame(oldItem: CommentDetail, newItem: CommentDetail): Boolean {
         return oldItem.id == newItem.id
     }
 
-    override fun areContentsTheSame(oldItem: Comment, newItem: Comment): Boolean {
+    override fun areContentsTheSame(oldItem: CommentDetail, newItem: CommentDetail): Boolean {
         return oldItem == newItem
     }
 }

@@ -62,7 +62,7 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
             }
 
             if (it.commentError != null) {
-                Toast.makeText(requireContext(), it.postError, Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), it.commentError, Toast.LENGTH_SHORT).show()
             }
 
             if (it.uploadCommentSuccess) {

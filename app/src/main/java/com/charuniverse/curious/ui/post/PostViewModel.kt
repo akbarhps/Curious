@@ -63,8 +63,7 @@ class PostViewModel @Inject constructor(
         }
 
         val data = (result as Result.Success).data
-        data.sortedByDescending { it.createdAt }
-        return MutableLiveData(data)
+        return MutableLiveData(data.sortedByDescending { it.createdAt })
     }
 
 }

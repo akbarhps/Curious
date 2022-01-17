@@ -4,12 +4,11 @@ import android.util.Log
 import androidx.lifecycle.*
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.entity.Comment
+import com.charuniverse.curious.data.model.CommentDetail
 import com.charuniverse.curious.data.model.PostDetail
 import com.charuniverse.curious.data.repository.CommentRepository
 import com.charuniverse.curious.data.repository.PostRepository
-import com.charuniverse.curious.data.repository.UserRepository
 import com.charuniverse.curious.util.Event
-import com.charuniverse.curious.util.Preferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -17,7 +16,6 @@ import javax.inject.Inject
 @HiltViewModel
 class PostDetailViewModel @Inject constructor(
     private val postRepository: PostRepository,
-    private val userRepository: UserRepository,
     private val commentRepository: CommentRepository,
 ) : ViewModel() {
 
@@ -54,18 +52,13 @@ class PostDetailViewModel @Inject constructor(
             return
         }
 
-        _postId.value?.let {
-            viewModelScope.launch {
-                commentRepository.refreshComments(it)
-            }
-        }
-
         updateState(isLoading = true)
         _postId.value = id
     }
 
     private val _post = _postId.switchMap { id ->
         postRepository.observePost(id).map {
+            refreshComments()
             handlePostResult(it)
         }
     }
@@ -75,13 +68,13 @@ class PostDetailViewModel @Inject constructor(
     // two way data binding
     val inputComment = MutableLiveData("")
 
-    private val _comments: LiveData<List<Comment>> = commentRepository.observeComments()
+    private val _comments: LiveData<List<CommentDetail>> = commentRepository.observeComments()
         .distinctUntilChanged()
         .switchMap {
             return@switchMap handleCommentsResult(it)
         }
 
-    val comments: LiveData<List<Comment>> = _comments
+    val comments: LiveData<List<CommentDetail>> = _comments
 
     private fun handlePostResult(result: Result<PostDetail>): PostDetail? {
         if (result is Result.Error) {
@@ -92,12 +85,11 @@ class PostDetailViewModel @Inject constructor(
         }
 
         val data = (result as Result.Success).data
-        viewModelScope.launch { commentRepository.refreshComments(data.id) }
         updateState(isLoading = false)
         return data
     }
 
-    private fun handleCommentsResult(result: Result<List<Comment>>): LiveData<List<Comment>> {
+    private fun handleCommentsResult(result: Result<List<CommentDetail>>): LiveData<List<CommentDetail>> {
         if (result is Result.Error) {
             Log.e(TAG, "handleCommentsResult: ${result.exception.message}", result.exception)
 
@@ -109,14 +101,18 @@ class PostDetailViewModel @Inject constructor(
         return MutableLiveData((result as Result.Success).data)
     }
 
+    fun refreshComments() = viewModelScope.launch {
+        updateState(isLoading = true)
+        commentRepository.refreshComments(_postId.value!!)
+    }
+
     fun uploadComment() = viewModelScope.launch {
         updateState(isLoading = true)
 
         val postId = _postId.value!!
         val comment = Comment(
             postId = postId,
-            content = inputComment.value!!,
-            createdBy = Preferences.userId,
+            content = inputComment.value.toString().trim().replace("\n", "  \n"),
         )
 
         val result = commentRepository.save(comment)

@@ -81,7 +81,6 @@ class PostCreateEditViewModel @Inject constructor(
         val post = Post(
             title = inputTitle.value.toString().trim().replace('\n', ' '),
             content = inputContent.value.toString().trim().replace("\n", "  \n"),
-            createdBy = Preferences.userId,
         )
 
         val oldPost = _post.value

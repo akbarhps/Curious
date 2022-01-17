@@ -22,6 +22,7 @@
             android:id="@+id/scrollLayout"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            app:onRefreshListener="@{() -> viewModel.refreshComments()}"
             app:layout_constraintBottom_toTopOf="@+id/til"
             app:layout_constraintTop_toTopOf="parent">
 

@@ -8,6 +8,7 @@ import com.charuniverse.curious.data.Result.*
 import com.charuniverse.curious.data.entity.Post
 import com.charuniverse.curious.data.entity.User
 import com.charuniverse.curious.data.model.PostDetail
+import com.charuniverse.curious.util.Cache
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -16,13 +17,11 @@ import kotlinx.coroutines.withContext
 
 class PostRemoteDataSource(
     firebaseDatabase: FirebaseDatabase,
-    private val dispatcherContext: CoroutineDispatcher = Dispatchers.IO,
+    private val context: CoroutineDispatcher = Dispatchers.IO,
 ) {
 
     private val postRef = firebaseDatabase.reference.child("posts")
     private val userRef = firebaseDatabase.reference.child("users")
-
-    private var cachedUser = mutableMapOf<String, User>()
 
     private val observablePosts = MutableLiveData<Result<List<PostDetail>>>()
     fun observePosts(): LiveData<Result<List<PostDetail>>> = observablePosts
@@ -52,19 +51,20 @@ class PostRemoteDataSource(
         }
     }
 
-    suspend fun findAll(): Result<List<PostDetail>> = withContext(dispatcherContext) {
+    suspend fun findAll(): Result<List<PostDetail>> = withContext(context) {
         return@withContext try {
-            val docs = postRef.orderByChild("createdAt")
-                .get().await()
+            val docs = postRef.get().await()
 
             Success(docs.children.map {
                 val post = it.getValue(Post::class.java)!!
 
-                val author = cachedUser[post.createdBy]
-                    ?: userRef.child(post.createdBy).get().await()
-                        .getValue(User::class.java)!!
+                var author = Cache.users[post.createdBy]
+                if (author == null) {
+                    val userDoc = userRef.child(post.createdBy).get().await()
+                    author = userDoc.getValue(User::class.java)!!
+                }
 
-                post.toFeedPost(author)
+                PostDetail.fromPost(post, author)
             })
         } catch (e: Exception) {
             Error(e)
@@ -72,22 +72,24 @@ class PostRemoteDataSource(
     }
 
     suspend fun findById(postId: String): Result<PostDetail> =
-        withContext(dispatcherContext) {
+        withContext(context) {
             return@withContext try {
                 val post = postRef.child(postId).get().await()
                     .getValue(Post::class.java)!!
 
-                val author = cachedUser[post.createdBy]
-                    ?: userRef.child(post.createdBy).get().await()
-                        .getValue(User::class.java)!!
+                var author = Cache.users[post.createdBy]
+                if (author == null) {
+                    val userDoc = userRef.child(post.createdBy).get().await()
+                    author = userDoc.getValue(User::class.java)!!
+                }
 
-                Success(post.toFeedPost(author))
+                Success(PostDetail.fromPost(post, author))
             } catch (e: Exception) {
                 Error(e)
             }
         }
 
-    suspend fun findByUserId(userId: String): Result<List<Post>> = withContext(dispatcherContext) {
+    suspend fun findByUserId(userId: String): Result<List<Post>> = withContext(context) {
         return@withContext try {
             val docs = postRef.orderByChild("createdBy")
                 .equalTo(userId)
@@ -99,7 +101,7 @@ class PostRemoteDataSource(
         }
     }
 
-    suspend fun save(post: Post): Result<Unit> = withContext(dispatcherContext) {
+    suspend fun save(post: Post): Result<Unit> = withContext(context) {
         return@withContext try {
             postRef.child(post.id).setValue(post).await()
             Success(Unit)
@@ -108,7 +110,7 @@ class PostRemoteDataSource(
         }
     }
 
-    suspend fun delete(postId: String): Result<Unit> = withContext(dispatcherContext) {
+    suspend fun delete(postId: String): Result<Unit> = withContext(context) {
         return@withContext try {
             postRef.child(postId).setValue(null).await()
             Success(Unit)
