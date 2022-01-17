@@ -5,6 +5,7 @@ import androidx.lifecycle.*
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.model.PostDetail
 import com.charuniverse.curious.data.repository.PostRepository
+import com.charuniverse.curious.ui.post.PostViewState
 import com.charuniverse.curious.util.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -19,49 +20,51 @@ class PostFeedViewModel @Inject constructor(
         private const val TAG = "PostViewModel"
     }
 
-    private val _isLoading = MutableLiveData<Boolean>()
-    val isLoading: LiveData<Boolean> = _isLoading
+    private val _viewState = MutableLiveData<Event<PostViewState>>()
+    val viewState: LiveData<Event<PostViewState>> = _viewState
 
-    private val _errorMessage = MutableLiveData<Event<String>>()
-    val errorMessage: LiveData<Event<String>> = _errorMessage
+    private fun updateViewState(isLoading: Boolean = false, error: Exception? = null) {
+        _viewState.value = Event(PostViewState(isLoading = isLoading, error = error))
+    }
 
-    private val _postList: LiveData<List<PostDetail>> = postRepository
-        .observePosts().distinctUntilChanged()
-        .switchMap { return@switchMap handleResult(it) }
-    val postList: LiveData<List<PostDetail>> = _postList
+    private val _posts: LiveData<List<PostDetail>> = postRepository.observePosts()
+        .distinctUntilChanged().switchMap { return@switchMap handleResult(it) }
+    val posts: LiveData<List<PostDetail>> = _posts
 
-    private val _postId = MutableLiveData<Event<String>>()
-    val postId: LiveData<Event<String>> = _postId
+    private val _selectedPostId = MutableLiveData<Event<String>>()
+    val selectedPostId: LiveData<Event<String>> = _selectedPostId
 
-    fun setSelectedPostId(id: String) {
-        _postId.value = Event(id)
+    fun setSelectedPostId(postId: String) {
+        _selectedPostId.value = Event(postId)
     }
 
     init {
-        refreshData()
+        refreshPosts()
     }
 
-    fun refreshData() = viewModelScope.launch {
-        _isLoading.value = true
+    fun refreshPosts() = viewModelScope.launch {
+        updateViewState(isLoading = true)
         postRepository.refreshPosts()
-        _isLoading.value = false
     }
 
-    fun togglePostLove(postId: String) = viewModelScope.launch {
+    fun toggleLove(postId: String) = viewModelScope.launch {
         postRepository.toggleLove(postId)
-        postRepository.refreshPosts()
+        refreshPosts()
     }
 
     private fun handleResult(result: Result<List<PostDetail>>): LiveData<List<PostDetail>> {
-        if (result is Result.Error) {
-            Log.e(TAG, "filterData: ${result.exception.message}", result.exception)
-
-            _errorMessage.value = Event(result.exception.message.toString())
-            return MutableLiveData(listOf())
+        updateViewState(isLoading = false)
+        return when (result) {
+            is Result.Loading -> MutableLiveData(listOf()) // this never occur
+            is Result.Success -> {
+                val data = result.data.sortedByDescending { it.createdAt }
+                MutableLiveData(data)
+            }
+            is Result.Error -> {
+                Log.e(TAG, "handleResult: ${result.exception.message}", result.exception)
+                MutableLiveData(listOf())
+            }
         }
-
-        val data = (result as Result.Success).data
-        return MutableLiveData(data.sortedByDescending { it.createdAt })
     }
 
 }

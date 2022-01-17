@@ -26,9 +26,14 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
         binding = FragmentProfileBinding.bind(view)
+        val adapter = UserPostAdapter(viewModel)
+        binding.postsList.adapter = adapter
 
         viewModel.viewState.observe(viewLifecycleOwner, {
             binding.viewState = it
+        })
+        viewModel.userPosts.observe(viewLifecycleOwner, {
+            adapter.submitList(it)
         })
         viewModel.isLoading.observe(viewLifecycleOwner, {
             Dialogs.toggleProgressBar(it)

@@ -4,7 +4,7 @@
 
     <data>
 
-        <import type="com.charuniverse.curious.ui.post.feed.PostFeedViewModel" />
+        <import type="com.charuniverse.curious.ui.profile.ProfileViewModel" />
 
         <import type="com.charuniverse.curious.data.model.PostDetail" />
 
@@ -14,7 +14,7 @@
 
         <variable
             name="viewModel"
-            type="PostFeedViewModel" />
+            type="ProfileViewModel" />
 
         <variable
             name="post"
@@ -24,7 +24,6 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="@{() -> viewModel.setSelectedPostId(post.id)}"
         android:orientation="vertical"
         android:paddingTop="8dp"
         android:paddingBottom="8dp">
@@ -50,33 +49,6 @@
             android:text="@{post.content}"
             android:textSize="14sp"
             android:visibility="@{post.content.empty ? View.GONE : View.VISIBLE}" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="32dp"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp">
-
-            <ImageView
-                android:id="@+id/imageView"
-                android:layout_width="32dp"
-                android:layout_height="match_parent"
-                app:loadCircular="@{post.author.profilePictureURL}" />
-
-            <TextView
-                android:id="@+id/textView2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:text="@{post.author.username}" />
-
-        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"

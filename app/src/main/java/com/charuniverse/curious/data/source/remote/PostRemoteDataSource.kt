@@ -8,6 +8,7 @@ import com.charuniverse.curious.data.Result.*
 import com.charuniverse.curious.data.entity.Comment
 import com.charuniverse.curious.data.entity.Post
 import com.charuniverse.curious.data.entity.User
+import com.charuniverse.curious.data.model.CommentDetail
 import com.charuniverse.curious.data.model.PostDetail
 import com.charuniverse.curious.util.Cache
 import com.charuniverse.curious.util.Preferences
@@ -30,20 +31,26 @@ class PostRemoteDataSource(
     fun observePosts(): LiveData<Result<List<PostDetail>>> = observablePosts
 
     suspend fun refreshPosts() = withContext(Dispatchers.Main) {
+        Cache.clearCache()
         observablePosts.value = findAll()!!
     }
 
-    private val observableUserPosts = MutableLiveData<Result<List<Post>>>()
-    fun observeUserPosts(): LiveData<Result<List<Post>>> = observableUserPosts
-
-    suspend fun refreshUserPosts(userId: String) = withContext(Dispatchers.Main) {
-        Cache.clearCache()
-        observableUserPosts.value = findByUserId(userId)!!
+    fun observeUserPosts(userId: String): LiveData<Result<List<PostDetail>>> {
+        return observablePosts.map { posts ->
+            return@map when (posts) {
+                is Loading -> Loading
+                is Error -> Error(posts.exception)
+                is Success -> {
+                    val data = posts.data.filter { it.createdBy == userId }
+                    Success(data)
+                }
+            }
+        }
     }
 
     fun observePost(postId: String): LiveData<Result<PostDetail>> {
         return observablePosts.map { posts ->
-            val result = when (posts) {
+            return@map when (posts) {
                 is Loading -> Loading
                 is Error -> Error(posts.exception)
                 is Success -> {
@@ -51,37 +58,21 @@ class PostRemoteDataSource(
                     Success(post)
                 }
             }
-            result
         }
     }
 
     suspend fun findAll(): Result<List<PostDetail>> = withContext(context) {
         return@withContext try {
             val docs = postRef.get().await()
-
-            // TODO: refactor this shit
             val result = docs.children.map { snapshot ->
-                snapshot.getValue(PostDetail::class.java)!!.let { post ->
-
-                    var postAuthor = Cache.users[post.createdBy]
-                    if (postAuthor == null) {
-                        val userDoc = userRef.child(post.createdBy).get().await()
-                        postAuthor = userDoc.getValue(User::class.java)!!
-                    }
-                    post.author = postAuthor
-
-                    post.comments?.map { (_, comment) ->
-                        var commentAuthor = Cache.users[comment.createdBy]
-                        if (commentAuthor == null) {
-                            val userDoc = userRef.child(comment.createdBy).get().await()
-                            commentAuthor = userDoc.getValue(User::class.java)!!
-                        }
-                        comment.author = commentAuthor
-                    }
-
-                    post.isViewerLoved = post.lovers?.containsKey(Preferences.userId) ?: false
-                    return@map post
+                val post = snapshot.getValue(PostDetail::class.java)!!
+                post.author = findUser(post.createdBy)
+                post.comments?.toSortedMap()?.map { (_, comment) ->
+                    comment.author = findUser(comment.createdBy)
                 }
+
+                post.isViewerLoved = post.lovers?.containsKey(Preferences.userId) ?: false
+                return@map post
             }
 
             Success(result)
@@ -93,23 +84,10 @@ class PostRemoteDataSource(
     suspend fun findById(postId: String): Result<PostDetail> = withContext(context) {
         return@withContext try {
             val snapshot = postRef.child(postId).get().await()
-
-            // TODO: refactor this shit
             val result = snapshot.getValue(PostDetail::class.java)!!.let { post ->
-                var postAuthor = Cache.users[post.createdBy]
-                if (postAuthor == null) {
-                    val userDoc = userRef.child(post.createdBy).get().await()
-                    postAuthor = userDoc.getValue(User::class.java)!!
-                }
-                post.author = postAuthor
-
+                post.author = findUser(post.createdBy)
                 post.comments?.toSortedMap()?.map { (_, comment) ->
-                    var commentAuthor = Cache.users[comment.createdBy]
-                    if (commentAuthor == null) {
-                        val userDoc = userRef.child(comment.createdBy).get().await()
-                        commentAuthor = userDoc.getValue(User::class.java)!!
-                    }
-                    comment.author = commentAuthor
+                    comment.author = findUser(comment.createdBy)
                 }
 
                 return@let post
@@ -119,6 +97,16 @@ class PostRemoteDataSource(
         } catch (e: Exception) {
             Error(e)
         }
+    }
+
+    // TODO: move to user remote data source maybe?
+    private suspend fun findUser(userId: String): User? {
+        var user = Cache.users[userId]
+        if (user == null) {
+            val userDoc = userRef.child(userId).get().await()
+            user = userDoc.getValue(User::class.java)
+        }
+        return user
     }
 
     suspend fun findByUserId(userId: String): Result<List<Post>> = withContext(context) {

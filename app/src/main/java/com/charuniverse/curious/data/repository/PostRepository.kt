@@ -23,12 +23,8 @@ class PostRepository(
         return remoteDataSource.observePosts()
     }
 
-    suspend fun refreshUserPosts(userId: String) = withContext(dispatcherContext) {
-        remoteDataSource.refreshUserPosts(userId)
-    }
-
-    fun observeUserPosts(): LiveData<Result<List<Post>>> {
-        return remoteDataSource.observeUserPosts()
+    fun observeUserPosts(userId: String): LiveData<Result<List<PostDetail>>> {
+        return remoteDataSource.observeUserPosts(userId)
     }
 
     fun observePost(postId: String): LiveData<Result<PostDetail>> {

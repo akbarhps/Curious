@@ -1,4 +1,4 @@
-package com.charuniverse.curious.ui.post.detail
+package com.charuniverse.curious.ui.binding
 
 import androidx.databinding.BindingAdapter
 import com.google.android.material.textfield.TextInputLayout

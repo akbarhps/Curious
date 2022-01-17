@@ -1,15 +1,15 @@
-package com.charuniverse.curious.ui.post.feed
+package com.charuniverse.curious.ui.profile
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.charuniverse.curious.data.model.PostDetail
-import com.charuniverse.curious.databinding.ViewPostFeedItemBinding
+import com.charuniverse.curious.databinding.ViewProfilePostItemBinding
+import com.charuniverse.curious.ui.post.feed.TaskDiffCallback
 
-class PostFeedAdapter(private val viewModel: PostFeedViewModel) :
-    ListAdapter<PostDetail, PostFeedAdapter.ViewHolder>(TaskDiffCallback()) {
+class UserPostAdapter(private val viewModel: ProfileViewModel) :
+    ListAdapter<PostDetail, UserPostAdapter.ViewHolder>(TaskDiffCallback()) {
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
@@ -20,31 +20,21 @@ class PostFeedAdapter(private val viewModel: PostFeedViewModel) :
         return ViewHolder.from(parent)
     }
 
-    class ViewHolder private constructor(val binding: ViewPostFeedItemBinding) :
+    class ViewHolder private constructor(val binding: ViewProfilePostItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
         companion object {
             fun from(parent: ViewGroup): ViewHolder {
                 val layoutInflater = LayoutInflater.from(parent.context)
-                val binding = ViewPostFeedItemBinding.inflate(layoutInflater)
+                val binding = ViewProfilePostItemBinding.inflate(layoutInflater)
                 return ViewHolder(binding)
             }
         }
 
-        fun bind(viewModel: PostFeedViewModel, item: PostDetail) {
+        fun bind(viewModel: ProfileViewModel, item: PostDetail) {
             binding.post = item
             binding.viewModel = viewModel
             binding.executePendingBindings()
         }
-    }
-}
-
-class TaskDiffCallback : DiffUtil.ItemCallback<PostDetail>() {
-    override fun areItemsTheSame(oldItem: PostDetail, newItem: PostDetail): Boolean {
-        return oldItem.id == newItem.id
-    }
-
-    override fun areContentsTheSame(oldItem: PostDetail, newItem: PostDetail): Boolean {
-        return oldItem == newItem
     }
 }

@@ -21,7 +21,7 @@ class PostFeedFragment : Fragment(R.layout.fragment_post_feed) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val postAdapter = PostAdapter(viewModel)
+        val postAdapter = PostFeedAdapter(viewModel)
 
         binding = FragmentPostFeedBinding.bind(view).also {
             it.lifecycleOwner = this
@@ -29,7 +29,7 @@ class PostFeedFragment : Fragment(R.layout.fragment_post_feed) {
             it.postsList.adapter = postAdapter
         }
 
-        viewModel.postList.observe(viewLifecycleOwner, {
+        viewModel.posts.observe(viewLifecycleOwner, {
             postAdapter.submitList(it)
         })
 
@@ -37,12 +37,16 @@ class PostFeedFragment : Fragment(R.layout.fragment_post_feed) {
     }
 
     private fun setupEventObserver() {
-        viewModel.postId.observe(viewLifecycleOwner, EventObserver {
+        viewModel.selectedPostId.observe(viewLifecycleOwner, EventObserver {
             val dest = PostFeedFragmentDirections.actionPostFeedFragmentToPostDetailFragment(it)
             findNavController().navigate(dest)
         })
-        viewModel.errorMessage.observe(viewLifecycleOwner, EventObserver {
-            Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+        viewModel.viewState.observe(viewLifecycleOwner, EventObserver { state ->
+            binding.swipeLayout.isRefreshing = state.isLoading
+
+            state.error?.let {
+                Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
+            }
         })
     }
 }
