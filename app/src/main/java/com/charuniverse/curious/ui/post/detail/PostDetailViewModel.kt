@@ -38,7 +38,7 @@ class PostDetailViewModel @Inject constructor(
         _viewState.value = Event(
             PostDetailViewState(
                 isLoading = isLoading,
-                isCompleted = isCompleted,
+                isDeletePostComplete = isCompleted,
                 fetchPostError = fetchPostError,
                 fetchCommentsError = fetchCommentsError,
                 uploadCommentError = uploadCommentError,
@@ -91,8 +91,10 @@ class PostDetailViewModel @Inject constructor(
             return null
         }
 
-        updateState(isLoading = false)
-        return (result as Result.Success).data
+        val data = (result as Result.Success).data
+        viewModelScope.launch { commentRepository.refreshComments(data.id) }
+//        updateState(isLoading = false)
+        return data
     }
 
     private fun handleCommentsResult(result: Result<List<Comment>>): LiveData<List<Comment>> {
@@ -104,6 +106,7 @@ class PostDetailViewModel @Inject constructor(
         }
 
         updateState(isLoading = false)
+        Log.i(TAG, "handleCommentsResult: Berhasil di hendel")
         return MutableLiveData((result as Result.Success).data)
     }
 
@@ -121,10 +124,11 @@ class PostDetailViewModel @Inject constructor(
         if (result is Result.Error) {
             Log.e(TAG, "uploadComment: ${result.exception.message}", result.exception)
 
-            updateState(isLoading = false, uploadCommentError = result.exception.message.toString())
+            updateState(uploadCommentError = result.exception.message.toString())
             return@launch
         }
 
+        Log.i(TAG, "uploadComment: Berhasil upload, saatnya refresh")
         commentRepository.refreshComments(postId)
     }
 

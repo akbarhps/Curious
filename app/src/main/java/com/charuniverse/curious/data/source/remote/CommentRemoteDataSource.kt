@@ -20,13 +20,16 @@ class CommentRemoteDataSource(
     private val observableComments = MutableLiveData<Result<List<Comment>>>()
     fun observeComments(): LiveData<Result<List<Comment>>> = observableComments
 
-    suspend fun refreshComments(postId: String) = withContext(context) {
+    suspend fun refreshComments(postId: String) = withContext(Dispatchers.Main) {
         observableComments.value = findByPostId(postId)!!
     }
 
     suspend fun findByPostId(postId: String): Result<List<Comment>> = withContext(context) {
         return@withContext try {
-            val docs = commentRef.orderByChild(postId).get().await()
+            val docs = commentRef
+                .orderByChild("postId").equalTo(postId)
+                .get().await()
+
             Success(docs.children.map { it.getValue(Comment::class.java)!! })
         } catch (e: Exception) {
             Error(e)
@@ -35,7 +38,8 @@ class CommentRemoteDataSource(
 
     suspend fun save(comment: Comment): Result<Unit> = withContext(context) {
         return@withContext try {
-            commentRef.child(comment.id).get().await()
+            commentRef.child(comment.id).setValue(comment)
+                .await()
             Success(Unit)
         } catch (e: Exception) {
             Error(e)

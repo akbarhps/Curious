@@ -31,14 +31,20 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.setPostId(args.postId)
+
         binding = FragmentPostDetailBinding.bind(view).also {
             it.viewModel = viewModel
             it.lifecycleOwner = this
+            it.commentsList.adapter = PostCommentsAdapter(viewModel)
         }
 
         viewModel.post.observe(viewLifecycleOwner, {
             if (it == null) return@observe
             setHasOptionsMenu(it.createdBy == Preferences.userId)
+        })
+
+        viewModel.comments.observe(viewLifecycleOwner, {
+            (binding.commentsList.adapter as PostCommentsAdapter).submitList(it)
         })
 
         setupEventObserver()
@@ -56,7 +62,12 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
                 Toast.makeText(requireContext(), it.fetchPostError, Toast.LENGTH_SHORT).show()
             }
 
-            if (it.isCompleted) {
+            if (it.isUploadCommentComplete) {
+                Toast.makeText(requireContext(), "Posted!", Toast.LENGTH_SHORT).show()
+                binding.comment.setText("")
+            }
+
+            if (it.isDeletePostComplete) {
                 postViewModel.refresh()
                 findNavController().navigateUp()
             }
