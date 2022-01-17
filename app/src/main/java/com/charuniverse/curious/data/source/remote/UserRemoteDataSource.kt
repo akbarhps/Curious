@@ -4,7 +4,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.Result.*
+import com.charuniverse.curious.data.entity.Post
 import com.charuniverse.curious.data.entity.User
+import com.charuniverse.curious.exception.NotFound
 import com.charuniverse.curious.util.Cache
 import com.google.firebase.database.*
 import kotlinx.coroutines.CoroutineDispatcher
@@ -48,6 +50,26 @@ class UserRemoteDataSource(
             }
 
             Cache.users[remoteUser.id] = remoteUser
+            Success(Unit)
+        } catch (e: Exception) {
+            Error(e)
+        }
+    }
+
+    suspend fun update(user: User): Result<Unit> = withContext(context) {
+        return@withContext try {
+            val updates: MutableMap<String, Any> = HashMap()
+
+            userRef.child(user.id).get().await().getValue(Post::class.java)
+                ?: return@withContext Error(NotFound("User not found"))
+
+            updates["${user.id}/username"] = user.username
+            updates["${user.id}/displayName"] = user.displayName
+            updates["${user.id}/updatedAt"] = System.currentTimeMillis()
+
+            userRef.updateChildren(updates)
+            Cache.users[user.id] = user
+
             Success(Unit)
         } catch (e: Exception) {
             Error(e)

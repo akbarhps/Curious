@@ -28,6 +28,10 @@ class UserRepository(
         return remoteDataSource.saveIfNotExist(user)
     }
 
+    suspend fun update(user: User): Result<Unit> {
+        return remoteDataSource.update(user)
+    }
+
     suspend fun findById(userId: String): Result<User> {
         return remoteDataSource.findById(userId)
     }

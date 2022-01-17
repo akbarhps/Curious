@@ -13,6 +13,9 @@
             app:destination="@id/loginFragment"
             app:popUpTo="@id/postFeedFragment"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_profileFragment_to_profileEditFragment"
+            app:destination="@id/profileEditFragment" />
     </fragment>
 
     <fragment
@@ -92,4 +95,8 @@
             app:argType="string"
             app:nullable="true" />
     </fragment>
+    <fragment
+        android:id="@+id/profileEditFragment"
+        android:name="com.charuniverse.curious.ui.profile.edit.ProfileEditFragment"
+        android:label="Edit Profile" />
 </navigation>

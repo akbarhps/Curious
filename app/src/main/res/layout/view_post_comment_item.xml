@@ -39,7 +39,7 @@
                 android:ellipsize="end"
                 android:gravity="center|start"
                 android:maxLines="1"
-                android:text="@{comment.author.displayName}" />
+                android:text="@{comment.author.username}" />
 
             <TextView
                 android:id="@+id/textView3"

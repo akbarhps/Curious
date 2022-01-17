@@ -65,8 +65,10 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 viewModel.logOut(requireContext())
                 true
             }
-            R.id.profile_edit -> {
-                // navigate to profile edit fragment
+            R.id.profileEditFragment -> {
+                val dest = ProfileFragmentDirections
+                    .actionProfileFragmentToProfileEditFragment()
+                findNavController().navigate(dest)
                 true
             }
             else -> false
