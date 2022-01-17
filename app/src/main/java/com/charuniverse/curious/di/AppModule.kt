@@ -1,6 +1,5 @@
 package com.charuniverse.curious.di
 
-import com.charuniverse.curious.data.source.remote.CommentRemoteDataSource
 import com.charuniverse.curious.data.source.remote.PostRemoteDataSource
 import com.charuniverse.curious.data.source.remote.UserRemoteDataSource
 import com.google.firebase.database.FirebaseDatabase
@@ -43,20 +42,6 @@ object AppModule {
         dispatcherContext: CoroutineDispatcher
     ): PostRemoteDataSource {
         return PostRemoteDataSource(firebaseDatabase, dispatcherContext)
-    }
-
-    @Qualifier
-    @Retention(AnnotationRetention.RUNTIME)
-    annotation class RemoteCommentDataSource
-
-    @Singleton
-    @AppModule.RemoteCommentDataSource
-    @Provides
-    fun provideCommentRemoteDataSource(
-        firebaseDatabase: FirebaseDatabase,
-        context: CoroutineDispatcher
-    ): CommentRemoteDataSource {
-        return CommentRemoteDataSource(firebaseDatabase, context)
     }
 
     @Singleton

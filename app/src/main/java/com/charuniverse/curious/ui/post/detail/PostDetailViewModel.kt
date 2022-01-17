@@ -4,9 +4,7 @@ import android.util.Log
 import androidx.lifecycle.*
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.entity.Comment
-import com.charuniverse.curious.data.model.CommentDetail
 import com.charuniverse.curious.data.model.PostDetail
-import com.charuniverse.curious.data.repository.CommentRepository
 import com.charuniverse.curious.data.repository.PostRepository
 import com.charuniverse.curious.util.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,7 +14,6 @@ import javax.inject.Inject
 @HiltViewModel
 class PostDetailViewModel @Inject constructor(
     private val postRepository: PostRepository,
-    private val commentRepository: CommentRepository,
 ) : ViewModel() {
 
     companion object {
@@ -58,7 +55,6 @@ class PostDetailViewModel @Inject constructor(
 
     private val _post = _postId.switchMap { id ->
         postRepository.observePost(id).map {
-            refreshComments()
             handlePostResult(it)
         }
     }
@@ -68,14 +64,6 @@ class PostDetailViewModel @Inject constructor(
     // two way data binding
     val inputComment = MutableLiveData("")
 
-    private val _comments: LiveData<List<CommentDetail>> = commentRepository.observeComments()
-        .distinctUntilChanged()
-        .switchMap {
-            return@switchMap handleCommentsResult(it)
-        }
-
-    val comments: LiveData<List<CommentDetail>> = _comments
-
     private fun handlePostResult(result: Result<PostDetail>): PostDetail? {
         if (result is Result.Error) {
             Log.e(TAG, "handleResult: ${result.exception.message}", result.exception)
@@ -84,26 +72,24 @@ class PostDetailViewModel @Inject constructor(
             return null
         }
 
-        val data = (result as Result.Success).data
         updateState(isLoading = false)
-        return data
+        return (result as Result.Success).data
     }
 
-    private fun handleCommentsResult(result: Result<List<CommentDetail>>): LiveData<List<CommentDetail>> {
-        if (result is Result.Error) {
-            Log.e(TAG, "handleCommentsResult: ${result.exception.message}", result.exception)
+    fun refreshPost() = viewModelScope.launch {
+        postRepository.refreshPosts()
+    }
 
-            updateState(commentError = result.exception.message.toString())
-            return MutableLiveData(listOf())
+    fun handlePostLove(isLoved: Boolean) = viewModelScope.launch {
+        val postId = _postId.value!!
+
+        if (isLoved) {
+            postRepository.deleteLove(postId)
+        } else {
+            postRepository.addLove(postId)
         }
 
-        updateState(isLoading = false)
-        return MutableLiveData((result as Result.Success).data)
-    }
-
-    fun refreshComments() = viewModelScope.launch {
-        updateState(isLoading = true)
-        commentRepository.refreshComments(_postId.value!!)
+        postRepository.refreshPosts()
     }
 
     fun uploadComment() = viewModelScope.launch {
@@ -115,7 +101,7 @@ class PostDetailViewModel @Inject constructor(
             content = inputComment.value.toString().trim().replace("\n", "  \n"),
         )
 
-        val result = commentRepository.save(comment)
+        val result = postRepository.addComment(comment)
         if (result is Result.Error) {
             Log.e(TAG, "uploadComment: ${result.exception.message}", result.exception)
 
@@ -124,7 +110,7 @@ class PostDetailViewModel @Inject constructor(
         }
 
         updateState(uploadCommentSuccess = true)
-        commentRepository.refreshComments(postId)
+        postRepository.refreshPosts()
     }
 
     fun deletePost() = viewModelScope.launch {
@@ -133,7 +119,6 @@ class PostDetailViewModel @Inject constructor(
             is Result.Success -> updateState(deletePostSuccess = true)
             is Result.Error -> {
                 Log.e(TAG, "deletePost: ${result.exception.message}", result.exception)
-
                 updateState(postError = result.exception.message.toString())
             }
         }

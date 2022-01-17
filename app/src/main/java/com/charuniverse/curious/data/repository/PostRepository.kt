@@ -2,6 +2,7 @@ package com.charuniverse.curious.data.repository
 
 import androidx.lifecycle.LiveData
 import com.charuniverse.curious.data.Result
+import com.charuniverse.curious.data.entity.Comment
 import com.charuniverse.curious.data.entity.Post
 import com.charuniverse.curious.data.model.PostDetail
 import com.charuniverse.curious.data.source.remote.PostRemoteDataSource
@@ -42,4 +43,19 @@ class PostRepository(
         return remoteDataSource.delete(postId)
     }
 
+    suspend fun addLove(postId: String): Result<Unit> {
+        return remoteDataSource.addLove(postId)
+    }
+
+    suspend fun deleteLove(postId: String): Result<Unit> {
+        return remoteDataSource.deleteLove(postId)
+    }
+
+    suspend fun addComment(comment: Comment): Result<Unit> {
+        return remoteDataSource.addComment(comment)
+    }
+
+    suspend fun deleteComment(postId: String, commentId: String): Result<Unit> {
+        return remoteDataSource.deleteComment(postId, commentId)
+    }
 }

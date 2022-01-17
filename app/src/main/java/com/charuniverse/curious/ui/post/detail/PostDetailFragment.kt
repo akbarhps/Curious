@@ -30,20 +30,18 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.setPostId(args.postId)
+        val postCommentsAdapter = PostCommentsAdapter(viewModel)
 
         binding = FragmentPostDetailBinding.bind(view).also {
             it.viewModel = viewModel
             it.lifecycleOwner = this
-            it.commentsList.adapter = PostCommentsAdapter(viewModel)
+            it.commentsList.adapter = postCommentsAdapter
         }
 
         viewModel.post.observe(viewLifecycleOwner, {
             if (it == null) return@observe
             setHasOptionsMenu(it.createdBy == Preferences.userId)
-        })
-
-        viewModel.comments.observe(viewLifecycleOwner, {
-            (binding.commentsList.adapter as PostCommentsAdapter).submitList(it)
+            postCommentsAdapter.submitList(it.comments?.values?.toList())
         })
 
         setupEventObserver()

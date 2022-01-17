@@ -6,9 +6,9 @@ import java.util.*
 data class Post(
     var title: String = "",
     var content: String = "",
+    var loveCount: Long = 0,
     var createdBy: String = Preferences.userId,
     var createdAt: Long = System.currentTimeMillis(),
     var id: String = "${createdAt}_${UUID.randomUUID()}",
     var updatedAt: Long? = null,
-) {
-}
+)
