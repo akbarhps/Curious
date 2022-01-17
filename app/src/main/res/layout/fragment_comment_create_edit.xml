@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="com.charuniverse.curious.ui.comment.CommentCreateEditViewModel" />
+
+        <variable
+            name="postTitle"
+            type="String" />
+
+        <variable
+            name="viewModel"
+            type="CommentCreateEditViewModel" />
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_post_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:text="@{postTitle}"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#C8C8C8"
+            app:layout_constraintTop_toBottomOf="@+id/tv_post_title" />
+
+        <EditText
+            android:id="@+id/et_comment"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@null"
+            android:gravity="start"
+            android:hint="Your interesting thoughts here"
+            android:inputType="textMultiLine"
+            android:padding="16dp"
+            android:text="@={viewModel.inputComment}"
+            android:textSize="15sp"
+            app:handleMarkdownEvent="@{viewModel.markdownElement}"
+            app:layout_constraintBottom_toTopOf="@+id/rv_markdown_tags"
+            app:layout_constraintTop_toBottomOf="@+id/tv_post_title" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_markdown_tags"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:elevation="8dp"
+            android:orientation="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:listitem="@layout/view_post_create_helper_item" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

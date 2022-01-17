@@ -49,6 +49,9 @@
         <argument
             android:name="postId"
             app:argType="string" />
+        <action
+            android:id="@+id/action_postCreatePreviewFragment_to_markdownPreviewFragment"
+            app:destination="@id/markdownPreviewFragment" />
     </fragment>
     <fragment
         android:id="@+id/postDetailFragment"
@@ -60,5 +63,32 @@
         <action
             android:id="@+id/action_postDetailFragment_to_postCreateEditFragment"
             app:destination="@id/postCreateEditFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/commentCreateEditFragment"
+        android:name="com.charuniverse.curious.ui.comment.CommentCreateEditFragment"
+        android:label="CommentCreateEditFragment" >
+        <argument
+            android:name="postId"
+            app:argType="string" />
+        <argument android:name="postTitle" />
+        <action
+            android:id="@+id/action_commentCreateEditFragment_to_markdownPreviewFragment"
+            app:destination="@id/markdownPreviewFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/markdownPreviewFragment"
+        android:name="com.charuniverse.curious.ui.markdown.MarkdownPreviewFragment"
+        android:label="MarkdownPreviewFragment" >
+        <argument
+            android:name="title"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="content"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
     </fragment>
 </navigation>
