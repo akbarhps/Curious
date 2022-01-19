@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
 
         <import type="com.charuniverse.curious.ui.comment.CommentCreateEditViewModel" />
 
         <variable
-            name="postTitle"
-            type="String" />
-
-        <variable
             name="viewModel"
             type="CommentCreateEditViewModel" />
+
+        <variable
+            name="postTitle"
+            type="String" />
 
     </data>
 
@@ -45,9 +44,8 @@
             android:hint="Your interesting thoughts here"
             android:inputType="textMultiLine"
             android:padding="16dp"
-            android:text="@={viewModel.inputComment}"
+            android:text="@={viewModel.commentContent}"
             android:textSize="15sp"
-            app:handleMarkdownEvent="@{viewModel.markdownElement}"
             app:layout_constraintBottom_toTopOf="@+id/rv_markdown_tags"
             app:layout_constraintTop_toBottomOf="@+id/tv_post_title" />
 
@@ -60,8 +58,7 @@
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:listitem="@layout/view_post_create_helper_item" />
+            app:layout_constraintStart_toStartOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

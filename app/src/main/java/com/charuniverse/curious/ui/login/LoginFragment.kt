@@ -47,8 +47,8 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                 Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_LONG).show()
             }
 
-            if (state.isCompleted) {
-                updateUI()
+            if (state.isLoggedIn) {
+                openPostFeedFragment()
             }
         })
     }
@@ -67,7 +67,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             viewModel.loginWithGoogle(account.idToken!!)
         }
 
-    private fun updateUI() {
+    private fun openPostFeedFragment() {
         val dest = LoginFragmentDirections.actionLoginFragmentToPostFeedFragment()
         findNavController().navigate(dest)
     }

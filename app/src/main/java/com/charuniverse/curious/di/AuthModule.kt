@@ -1,6 +1,6 @@
 package com.charuniverse.curious.di
 
-import com.charuniverse.curious.data.repository.AuthRepository
+import com.charuniverse.curious.data.source.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides

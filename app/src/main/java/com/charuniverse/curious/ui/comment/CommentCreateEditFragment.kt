@@ -9,6 +9,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.charuniverse.curious.R
 import com.charuniverse.curious.databinding.FragmentCommentCreateEditBinding
+import com.charuniverse.curious.ui.binding.handleMarkdown
 import com.charuniverse.curious.ui.markdown.MarkdownTagAdapter
 import com.charuniverse.curious.util.Dialog
 import com.charuniverse.curious.util.EventObserver
@@ -16,7 +17,8 @@ import com.charuniverse.curious.util.Markdown
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class CommentCreateEditFragment : Fragment(R.layout.fragment_comment_create_edit) {
+class CommentCreateEditFragment : Fragment(R.layout.fragment_comment_create_edit),
+    MarkdownTagAdapter.Events {
 
     private lateinit var binding: FragmentCommentCreateEditBinding
 
@@ -30,24 +32,24 @@ class CommentCreateEditFragment : Fragment(R.layout.fragment_comment_create_edit
         setHasOptionsMenu(true)
         return FragmentCommentCreateEditBinding.inflate(inflater).let {
             binding = it
-
-            it.viewModel = viewModel
-            it.postTitle = args.postTitle
             it.lifecycleOwner = this
-
             return@let it.root
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.postId = args.postId
+        viewModel.setPostId(args.postId, args.commentId)
 
-        MarkdownTagAdapter(viewModel).let {
+        MarkdownTagAdapter(this).let {
             binding.rvMarkdownTags.adapter = it
             it.submitList(Markdown.elements)
         }
 
+        setupEventObserver()
+    }
+
+    private fun setupEventObserver() {
         viewModel.viewState.observe(viewLifecycleOwner, EventObserver { state ->
             Dialog.toggleProgressBar(state.isLoading)
 
@@ -55,10 +57,26 @@ class CommentCreateEditFragment : Fragment(R.layout.fragment_comment_create_edit
                 Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_SHORT).show()
             }
 
-            if (state.isCompleted) {
+            state.postTitle?.let {
+                binding.postTitle = it
+            }
+
+            state.content?.let {
+                binding.etComment.setText(it)
+            }
+
+            state.contentError?.let {
+                binding.etComment.error = it
+            }
+
+            if (state.isFinished) {
                 findNavController().navigateUp()
             }
         })
+    }
+
+    override fun onItemClicked(element: Markdown.Element) {
+        binding.etComment.handleMarkdown(element)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -68,7 +86,7 @@ class CommentCreateEditFragment : Fragment(R.layout.fragment_comment_create_edit
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.send -> {
-                viewModel.uploadComment()
+                viewModel.uploadComment(binding.etComment.text.toString())
                 true
             }
             R.id.markdownPreviewFragment -> {
@@ -80,10 +98,16 @@ class CommentCreateEditFragment : Fragment(R.layout.fragment_comment_create_edit
     }
 
     private fun openMarkdownPreviewFragment() {
-        val destination = CommentCreateEditFragmentDirections
+        val dest = CommentCreateEditFragmentDirections
             .actionCommentCreateEditFragmentToMarkdownPreviewFragment(
-                args.postTitle, binding.etComment.text.toString()
+                binding.tvPostTitle.text.toString(),
+                binding.etComment.text.toString()
             )
-        findNavController().navigate(destination)
+        findNavController().navigate(dest)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.refreshContent()
     }
 }

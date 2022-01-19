@@ -1,12 +1,12 @@
 package com.charuniverse.curious.di
 
-import com.charuniverse.curious.data.repository.PostRepository
+import com.charuniverse.curious.data.source.PostRepository
 import com.charuniverse.curious.data.source.remote.PostRemoteDataSource
+import com.charuniverse.curious.data.source.remote.UserRemoteDataSource
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineDispatcher
 import javax.inject.Singleton
 
 @Module
@@ -17,8 +17,9 @@ object PostModule {
     @Provides
     fun providePostRepository(
         @AppModule.RemotePostDataSource postRemoteDataSource: PostRemoteDataSource,
-        dispatcherContext: CoroutineDispatcher
+        @AppModule.RemoteUserDataSource userRemoteDataSource: UserRemoteDataSource,
     ): PostRepository {
-        return PostRepository(postRemoteDataSource, dispatcherContext)
+        return PostRepository(postRemoteDataSource, userRemoteDataSource)
     }
+
 }

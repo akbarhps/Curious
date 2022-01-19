@@ -2,16 +2,20 @@ package com.charuniverse.curious.ui.profile
 
 import android.content.Context
 import android.util.Log
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.charuniverse.curious.data.Result
-import com.charuniverse.curious.data.entity.User
-import com.charuniverse.curious.data.model.PostDetail
-import com.charuniverse.curious.data.repository.AuthRepository
-import com.charuniverse.curious.data.repository.PostRepository
-import com.charuniverse.curious.data.repository.UserRepository
-import com.charuniverse.curious.ui.post.BaseViewState
+import com.charuniverse.curious.data.dto.PostDetail
+import com.charuniverse.curious.data.model.User
+import com.charuniverse.curious.data.source.AuthRepository
+import com.charuniverse.curious.data.source.PostRepository
+import com.charuniverse.curious.data.source.UserRepository
 import com.charuniverse.curious.util.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,65 +27,81 @@ class ProfileViewModel @Inject constructor(
 ) : ViewModel() {
 
     companion object {
-        private const val TAG = "ProfileViewModel"
+        private const val TAG = "VMProfile"
     }
 
-    private val _viewState = MutableLiveData<Event<BaseViewState>>()
-    val viewState: LiveData<Event<BaseViewState>> = _viewState
+    private val _viewState = MutableLiveData<Event<ProfileViewState>>()
+    val viewState: LiveData<Event<ProfileViewState>> = _viewState
 
     private fun updateViewState(
-        isLoading: Boolean = false, isCompleted: Boolean = false, error: Exception? = null
+        isLoading: Boolean = false,
+        isLoggedOut: Boolean = false,
+        error: Exception? = null,
+        user: User? = null,
+        userPosts: List<PostDetail>? = null,
+        selectedPostId: String? = null,
     ) {
-        _viewState.value =
-            Event(BaseViewState(isLoading = isLoading, isCompleted = isCompleted, error = error))
+        _viewState.value = Event(
+            ProfileViewState(
+                isLoading = isLoading,
+                error = error,
+                isLoggedOut = isLoggedOut,
+                user = user,
+                userPosts = userPosts,
+                selectedPostId = selectedPostId,
+            )
+        )
     }
 
-    private val _user = userRepository.observeUser()
-        .distinctUntilChanged().switchMap { return@switchMap handleUserResult(it) }
-    val user: LiveData<User?> = _user
+    private lateinit var currentUserId: String
 
-    private fun handleUserResult(result: Result<User>): LiveData<User?> {
-        return if (result is Result.Error) MutableLiveData(null)
-        else MutableLiveData((result as Result.Success).data)
+    fun setUserId(userId: String) {
+        currentUserId = userId
+        refreshUser(true, true)
     }
 
-    private val _userPosts = _user.switchMap { user ->
-        if (user == null) return@switchMap MutableLiveData(listOf())
-        postRepository.observeUserPosts(user.id)
-            .distinctUntilChanged().switchMap { handleUserPostResult(it) }
+    fun refreshUser(
+        forceRefresh: Boolean = false,
+        refreshPost: Boolean = false
+    ) = viewModelScope.launch {
+        userRepository.getById(currentUserId, forceRefresh).collect { res ->
+            resultHandler(res) {
+                updateViewState(user = it)
+                if (refreshPost) refreshUserPost(true)
+            }
+        }
     }
-    val userPosts: LiveData<List<PostDetail>> = _userPosts
 
-    private val _selectedPostId = MutableLiveData<Event<String>>()
-    val selectedPostId: LiveData<Event<String>> = _selectedPostId
+    private fun refreshUserPost(forceRefresh: Boolean = false) = viewModelScope.launch {
+        postRepository.observeUserPosts(currentUserId, forceRefresh).collect { res ->
+            resultHandler(res) { updateViewState(userPosts = it) }
+        }
+    }
 
     fun setSelectedPostId(postId: String) {
-        _selectedPostId.value = Event(postId)
-    }
-
-    private fun handleUserPostResult(result: Result<List<PostDetail>>): LiveData<List<PostDetail>> {
-        return if (result is Result.Error) MutableLiveData(listOf())
-        else MutableLiveData((result as Result.Success).data)
-    }
-
-    fun setUserId(userId: String) = viewModelScope.launch {
-        userRepository.refreshObservableUser(userId)
+        updateViewState(selectedPostId = postId)
     }
 
     fun toggleLove(postId: String) = viewModelScope.launch {
-        postRepository.toggleLove(postId)
-        postRepository.refreshPosts()
+        postRepository.toggleLove(postId).collect {
+            resultHandler(it) { refreshUserPost(false) }
+        }
     }
 
     fun logOut(context: Context) = viewModelScope.launch {
-        updateViewState(isLoading = true)
-        val result = authRepository.logOut(context)
+        authRepository.logOut(context)
+            .catch { throwable -> updateViewState(error = Exception(throwable.message)) }
+            .collect { updateViewState(isLoggedOut = true) }
+    }
 
-        if (result is Result.Error) {
-            Log.e(TAG, "logOut: ${result.exception.message}", result.exception)
-            updateViewState(error = result.exception)
-        } else {
-            updateViewState(isCompleted = true)
+    private fun <T> resultHandler(result: Result<T>, onSuccess: (T) -> Unit) {
+        when (result) {
+            is Result.Loading -> updateViewState(isLoading = true)
+            is Result.Error -> {
+                Log.e(TAG, "resultHandler: ${result.exception.message}", result.exception)
+                updateViewState(error = result.exception)
+            }
+            is Result.Success -> onSuccess(result.data)
         }
     }
 

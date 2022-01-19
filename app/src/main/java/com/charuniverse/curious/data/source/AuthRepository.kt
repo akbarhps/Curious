@@ -1,8 +1,7 @@
-package com.charuniverse.curious.data.repository
+package com.charuniverse.curious.data.source
 
 import android.content.Context
-import com.charuniverse.curious.data.Result
-import com.charuniverse.curious.data.entity.User
+import com.charuniverse.curious.data.model.User
 import com.charuniverse.curious.util.Constant
 import com.charuniverse.curious.util.Preferences
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -12,8 +11,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
 
 class AuthRepository(
     private val firebaseAuth: FirebaseAuth,
@@ -37,33 +37,32 @@ class AuthRepository(
             username = it.uid,
             displayName = it.displayName ?: "",
             email = it.email ?: "",
-            profilePictureURL = it.photoUrl.toString(),
+            profilePictureUrl = it.photoUrl.toString(),
+            createdAt = System.currentTimeMillis(),
         )
     }
 
-    suspend fun loginWithGoogle(
-        accountIdToken: String
-    ): Result<Unit> = withContext(dispatcherContext) {
-        return@withContext try {
-            val credential = GoogleAuthProvider.getCredential(accountIdToken, null)
-            firebaseAuth.signInWithCredential(credential).await()
+    // TODO: refactor to Flow<Result<Unit>>
+    suspend fun loginWithGoogle(accountIdToken: String): Flow<Unit> = flow {
+        val credential = GoogleAuthProvider
+            .getCredential(accountIdToken, null)
 
-            Result.Success(Unit)
-        } catch (e: Exception) {
-            Result.Error(e)
-        }
+        firebaseAuth
+            .signInWithCredential(credential)
+            .await()
+
+        emit(Unit)
     }
 
-    suspend fun logOut(context: Context): Result<Unit> = withContext(dispatcherContext) {
-        return@withContext try {
-            buildGoogleSignInClient(context).signOut().await()
-            firebaseAuth.signOut()
-            Preferences.userId = ""
+    suspend fun logOut(context: Context): Flow<Unit> = flow {
+        buildGoogleSignInClient(context)
+            .signOut()
+            .await()
 
-            Result.Success(Unit)
-        } catch (e: Exception) {
-            Result.Error(e)
-        }
+        firebaseAuth.signOut()
+
+        Preferences.userId = ""
+        emit(Unit)
     }
 
 }

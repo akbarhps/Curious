@@ -25,7 +25,7 @@
             android:hint="What's on your thought?"
             android:inputType="textMultiLine"
             android:padding="16dp"
-            android:text="@={viewModel.inputTitle}"
+            android:text="@={viewModel.postTitle}"
             android:textSize="16sp"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -45,9 +45,8 @@
             android:hint="Tell more about it (Markdown Supported!)"
             android:inputType="textMultiLine"
             android:padding="16dp"
-            android:text="@={viewModel.inputContent}"
+            android:text="@={viewModel.postContent}"
             android:textSize="16sp"
-            app:handleMarkdownEvent="@{viewModel.markdownElement}"
             app:highlightMarkdown="@{true}"
             app:layout_constraintBottom_toTopOf="@+id/rv_markdown_tags"
             app:layout_constraintTop_toBottomOf="@+id/view3" />

@@ -5,6 +5,8 @@
 
     <data>
 
+        <import type="com.charuniverse.curious.data.dto.PostDetail" />
+
         <import type="com.charuniverse.curious.ui.post.detail.PostDetailViewModel" />
 
         <import type="com.charuniverse.curious.R" />
@@ -14,6 +16,10 @@
         <variable
             name="viewModel"
             type="PostDetailViewModel" />
+
+        <variable
+            name="post"
+            type="PostDetail" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -25,11 +31,12 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:onRefreshListener="@{() -> viewModel.refreshPost()}">
+            app:onRefreshListener="@{() -> viewModel.refreshPost(true)}">
 
             <androidx.core.widget.NestedScrollView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:visibility="@{post != null ? View.VISIBLE : View.GONE}">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -47,8 +54,7 @@
                             android:layout_width="32dp"
                             android:layout_height="match_parent"
                             android:background="?selectableItemBackgroundBorderless"
-                            android:onClick="@{() -> viewModel.setSelectedUserId(viewModel.post.author.id)}"
-                            app:loadCircular="@{viewModel.post.author.profilePictureURL}" />
+                            app:loadCircular="@{post.author.profilePictureUrl}" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -59,13 +65,21 @@
                             android:ellipsize="end"
                             android:gravity="center|start"
                             android:maxLines="1"
-                            android:text="@{viewModel.post.author.username}" />
+                            android:text="@{post.author.username}" />
+
+                        <ImageView
+                            android:id="@+id/imageView2"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_baseline_verified_24"
+                            android:visibility="@{post.author.verified ? View.VISIBLE : View.GONE}" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
                             android:gravity="center"
-                            app:timestamp="@{viewModel.post.createdAt}" />
+                            app:timestamp="@{post.createdAt}" />
 
                     </LinearLayout>
 
@@ -75,7 +89,7 @@
                         android:layout_marginTop="8dp"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@{viewModel.post.title}"
+                        android:text="@{post.title}"
                         android:textIsSelectable="true"
                         android:textSize="20sp"
                         android:textStyle="bold" />
@@ -89,7 +103,7 @@
                         android:paddingEnd="16dp"
                         android:textIsSelectable="true"
                         android:textSize="14sp"
-                        app:renderMarkdown="@{viewModel.post.content}" />
+                        app:renderMarkdown="@{post.content}" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -103,15 +117,15 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:onClick="@{() -> viewModel.togglePostLove()}"
-                            app:load="@{viewModel.post.viewerLoved ? R.drawable.ic_baseline_favorite_24 : R.drawable.ic_baseline_favorite_border_24}" />
+                            android:onClick="@{() -> viewModel.toggleLove()}"
+                            app:load="@{post.viewerLoved ? R.drawable.ic_baseline_favorite_24 : R.drawable.ic_baseline_favorite_border_24}" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
                             android:layout_marginStart="12dp"
                             android:gravity="center"
-                            android:text="@{``+viewModel.post.loveCount}" />
+                            android:text="@{``+post.loveCount}" />
 
                         <ImageView
                             android:id="@+id/iv_open_create_comment"
@@ -126,7 +140,7 @@
                             android:layout_height="match_parent"
                             android:layout_marginStart="12dp"
                             android:gravity="center"
-                            android:text="@{``+viewModel.post.commentCount}" />
+                            android:text="@{``+post.commentCount}" />
 
                     </LinearLayout>
 
@@ -136,8 +150,7 @@
                         android:layout_marginTop="16dp"
                         android:layout_marginBottom="16dp"
                         android:gravity="center"
-                        android:orientation="horizontal"
-                        android:visibility="@{viewModel.post == null ? View.GONE : View.VISIBLE}">
+                        android:orientation="horizontal">
 
                         <View
                             android:layout_width="0dp"
@@ -180,6 +193,7 @@
             android:layout_margin="12dp"
             android:src="@drawable/ic_baseline_comment_24"
             android:tooltipText="Comment this post"
+            android:visibility="@{post != null ? View.VISIBLE : View.GONE}"
             app:backgroundTint="@color/white"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />

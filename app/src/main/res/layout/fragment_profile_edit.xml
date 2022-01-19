@@ -4,7 +4,7 @@
 
     <data>
 
-        <import type="com.charuniverse.curious.data.entity.User" />
+        <import type="com.charuniverse.curious.data.model.User" />
 
         <variable
             name="user"
@@ -22,7 +22,7 @@
             android:layout_height="128dp"
             android:layout_margin="16dp"
             android:src="@drawable/ic_launcher_background"
-            app:loadCircular="@{user.profilePictureURL}" />
+            app:loadCircular="@{user.profilePictureUrl}" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"

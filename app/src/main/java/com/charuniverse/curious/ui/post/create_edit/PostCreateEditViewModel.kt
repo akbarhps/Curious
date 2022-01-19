@@ -1,106 +1,133 @@
 package com.charuniverse.curious.ui.post.create_edit
 
-import android.util.Log
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.charuniverse.curious.data.Result
-import com.charuniverse.curious.data.entity.Post
-import com.charuniverse.curious.data.model.PostDetail
-import com.charuniverse.curious.data.repository.PostRepository
-import com.charuniverse.curious.ui.markdown.MarkdownTagAdapter
-import com.charuniverse.curious.ui.post.BaseViewState
+import com.charuniverse.curious.data.model.Post
+import com.charuniverse.curious.data.source.PostRepository
 import com.charuniverse.curious.util.Event
-import com.charuniverse.curious.util.Markdown
+import com.charuniverse.curious.util.Preferences
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class PostCreateEditViewModel @Inject constructor(
-    private val postRepository: PostRepository,
-) : ViewModel(), MarkdownTagAdapter.Events {
+class PostCreateEditViewModel @Inject constructor(private val postRepository: PostRepository) :
+    ViewModel() {
 
     companion object {
         private const val TAG = "PostCreateViewModel"
     }
 
-    private val _viewState = MutableLiveData<Event<BaseViewState>>()
-    val viewState: LiveData<Event<BaseViewState>> = _viewState
+    private val _viewState = MutableLiveData<Event<PostCreateEditViewState>>()
+    val viewState: LiveData<Event<PostCreateEditViewState>> = _viewState
 
     private fun updateState(
-        isLoading: Boolean = false, error: Exception? = null, isCompleted: Boolean = false,
+        isLoading: Boolean = false,
+        isCompleted: Boolean = false,
+        post: Post? = null,
+        error: Exception? = null,
+        titleError: String? = null,
+        contentError: String? = null,
     ) {
         _viewState.value = Event(
-            BaseViewState(isLoading = isLoading, error = error, isCompleted = isCompleted)
+            PostCreateEditViewState(
+                isLoading = isLoading,
+                error = error,
+                isCompleted = isCompleted,
+                post = post,
+                titleError = titleError,
+                contentError = contentError
+            )
         )
     }
 
-    // two way data binding must be public
-    val inputTitle = MutableLiveData("")
-    val inputContent = MutableLiveData("")
+    val postTitle = MutableLiveData("")
+    val postContent = MutableLiveData("")
 
-    private val _postId = MutableLiveData<String>()
-    fun setPostId(id: String?) {
-        if (id == null) _postId.value = ""
-        if (id == null || _postId.value == id) return
+    private var currentPostId: String? = null
 
-        _postId.value = id!!
-        updateState(isLoading = true)
+    fun setPostId(id: String?) = id?.let {
+        currentPostId = id
+        refreshPost()
     }
 
-    private val _post = _postId.switchMap { id ->
-        if (id.isBlank()) return@switchMap MutableLiveData(null)
-        postRepository.observePost(id).map { handleResult(it) }
-    }
-    val post: LiveData<PostDetail?> = _post
-
-    private val _markdownElement = MutableLiveData<Markdown.Element>()
-    val markdownElement: LiveData<Markdown.Element> = _markdownElement
-
-    override fun onItemClicked(element: Markdown.Element) {
-        _markdownElement.value = element
-    }
-
-    private fun handleResult(result: Result<PostDetail?>): PostDetail? {
-        updateState(isLoading = false)
-        return when (result) {
-            is Result.Loading -> null
-            is Result.Success -> result.data
-            is Result.Error -> {
-                Log.e(TAG, "handleResult: ${result.exception.message}", result.exception)
-                updateState(error = result.exception)
-                null
+    private fun refreshPost() = viewModelScope.launch {
+        if (currentPostId == null) return@launch
+        postRepository.observePost(currentPostId!!, false).collect {
+            when (it) {
+                is Result.Loading -> updateState(isLoading = true)
+                is Result.Error -> updateState(error = it.exception)
+                is Result.Success -> updateState(post = it.data.toDomainPost())
             }
         }
     }
 
-    // FIXME: 16/01/2022
-    fun createOrUpdatePost() = viewModelScope.launch {
-        updateState(isLoading = true)
+    private fun validateInput(): Boolean {
+        val newTitle = postTitle.value!!
+            .trim().replace('\n', ' ')
 
-        val post = Post(
-            title = inputTitle.value.toString().trim().replace('\n', ' '),
-            content = inputContent.value.toString().trim().replace("\n", "  \n"),
-        )
+        val newContent = postContent.value!!
+            .trim().replace("\n", "  \n")
 
-        val result = _post.value?.let {
-            post.id = it.id
-            postRepository.update(post)
-        } ?: postRepository.save(post)
+        var titleError: String? = null
+        var contentError: String? = null
 
-        if (result is Result.Error) {
-            Log.e(TAG, "createPost failed: ${result.exception.message}", result.exception)
-            updateState(error = result.exception)
-            return@launch
+        if (newTitle.isBlank()) {
+            titleError = "Title can't be blank"
         }
 
-        inputTitle.value = ""
-        inputContent.value = ""
-        updateState(isCompleted = true)
+        if (newContent.isBlank()) {
+            contentError = "Content can't be blank"
+        }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            postRepository.refreshPosts()
+        return if (titleError != null || contentError != null) {
+            updateState(titleError = titleError, contentError = contentError)
+            false
+        } else {
+            true
+        }
+    }
+
+    fun savePost() = viewModelScope.launch {
+        val newTitle = postTitle.value!!
+            .trim().replace('\n', ' ')
+
+        val newContent = postContent.value!!
+            .trim().replace("\n", "  \n")
+
+        if (!validateInput()) return@launch
+
+        val newPost = Post(
+            id = currentPostId ?: UUID.randomUUID().toString(),
+            title = newTitle,
+            content = newContent,
+            createdBy = Preferences.userId,
+            createdAt = System.currentTimeMillis(),
+            updatedAt = if (currentPostId != null) System.currentTimeMillis() else null
+        )
+
+        if (currentPostId == null) {
+            postRepository.create(newPost).collect {
+                createUpdateResultHandler(it)
+            }
+        } else {
+            postRepository.update(newPost).collect {
+                createUpdateResultHandler(it)
+            }
+        }
+    }
+
+    //TODO: Refactor
+    private fun createUpdateResultHandler(result: Result<Unit>) {
+        when (result) {
+            is Result.Loading -> updateState(isLoading = true)
+            is Result.Error -> updateState(error = result.exception)
+            is Result.Success -> updateState(isCompleted = true)
         }
     }
 }

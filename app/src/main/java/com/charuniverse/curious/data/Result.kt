@@ -1,9 +1,5 @@
 package com.charuniverse.curious.data
 
-/**
- * A generic class that holds a value with its loading status.
- * @param <T>
- */
 sealed class Result<out R> {
 
     data class Success<out T>(val data: T) : Result<T>()
@@ -18,15 +14,3 @@ sealed class Result<out R> {
         }
     }
 }
-
-/**
- * `true` if [Result] is of type [Success] & holds non-null [Success.data].
- */
-val Result<*>.succeeded
-    get() = this is Result.Success && data != null
-
-val Result<*>.failed
-    get() = this is Result.Error
-
-val Result<*>.exception
-    get() = (this as Result.Error).exception
