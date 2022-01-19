@@ -9,7 +9,6 @@ import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.dto.PostDetail
 import com.charuniverse.curious.data.source.CommentRepository
 import com.charuniverse.curious.data.source.PostRepository
-import com.charuniverse.curious.exception.NotFound
 import com.charuniverse.curious.util.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
@@ -55,7 +54,7 @@ class PostDetailViewModel @Inject constructor(
 
     fun setPostId(id: String) {
         if (id.isBlank()) {
-            updateState(isFinished = true, error = NotFound("Post not found"))
+            updateState(isFinished = true, error = Exception("Post not found"))
             return
         }
 
@@ -68,7 +67,6 @@ class PostDetailViewModel @Inject constructor(
     }
 
     fun refreshPost(forceRefresh: Boolean = false) = viewModelScope.launch {
-        Log.i(TAG, "refreshPost: Terpanggil")
         postRepository.observePost(currentPostId, forceRefresh).collect {
             handleResult(it) { post -> updateState(post = post) }
         }

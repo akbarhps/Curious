@@ -1,7 +1,6 @@
 package com.charuniverse.curious.ui.post.detail
 
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -54,8 +53,12 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
             state.post?.let { post ->
                 setHasOptionsMenu(post.createdBy == Preferences.userId)
                 binding.post = post
-                (binding.commentsList.adapter as PostCommentsAdapter)
-                    .submitList(post.comments.values.sortedBy { it.createdAt })
+
+                (binding.commentsList.adapter as PostCommentsAdapter).let { adapter ->
+                    adapter.submitList(post.comments.values.sortedBy { it.createdAt })
+                    // TODO: find better way to refresh
+                    adapter.notifyDataSetChanged()
+                }
             }
 
             state.selectedUserId?.let {
