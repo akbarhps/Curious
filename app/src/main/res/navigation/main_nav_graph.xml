@@ -82,10 +82,14 @@
         <argument
             android:name="postId"
             app:argType="string" />
-        <argument android:name="postTitle" />
         <action
             android:id="@+id/action_commentCreateEditFragment_to_markdownPreviewFragment"
             app:destination="@id/markdownPreviewFragment" />
+        <argument
+            android:name="commentId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
     </fragment>
 
     <fragment

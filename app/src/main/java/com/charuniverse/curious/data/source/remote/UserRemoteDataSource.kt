@@ -1,105 +1,61 @@
 package com.charuniverse.curious.data.source.remote
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import com.charuniverse.curious.data.Result
-import com.charuniverse.curious.data.Result.*
-import com.charuniverse.curious.data.entity.Post
-import com.charuniverse.curious.data.entity.User
-import com.charuniverse.curious.exception.NotFound
-import com.charuniverse.curious.util.Cache
-import com.google.firebase.database.*
-import kotlinx.coroutines.CoroutineDispatcher
+import com.charuniverse.curious.data.model.User
+import com.charuniverse.curious.data.source.UserDataSource
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
-import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 class UserRemoteDataSource(
     firebaseDatabase: FirebaseDatabase,
-    private val context: CoroutineDispatcher = Dispatchers.IO,
-) {
+    private val context: CoroutineContext = Dispatchers.IO,
+) : UserDataSource {
 
     private val userRef = firebaseDatabase.reference.child("users")
 
-    private val observableUser = MutableLiveData<Result<User>>()
-    fun observeUser(): LiveData<Result<User>> = observableUser
-
-    suspend fun refreshObservableUser(userId: String) = withContext(Dispatchers.Main) {
-        observableUser.value = findById(userId)!!
+    override suspend fun create(user: User): Flow<Unit> = flow {
+        userRef.child(user.id)
+            .setValue(user)
+            .await()
+        emit(Unit)
     }
 
-    suspend fun save(user: User): Result<Unit> = withContext(context) {
-        return@withContext try {
-            userRef.child(user.id).setValue(user).await()
-
-            Cache.users[user.id] = user
-            Success(Unit)
-        } catch (e: Exception) {
-            Error(e)
-        }
+    override suspend fun getById(userId: String): Flow<User?> = flow {
+        val user = userRef.child(userId)
+            .get()
+            .await()
+            .getValue(User::class.java)
+        emit(user)
     }
 
-    suspend fun saveIfNotExist(user: User): Result<Unit> = withContext(context) {
-        return@withContext try {
-            val doc = userRef.child(user.id).get().await()
+    override suspend fun update(user: User): Flow<Unit> = flow {
+        val updates: MutableMap<String, Any> = HashMap()
 
-            var remoteUser = doc.getValue(User::class.java)
-            if (remoteUser == null) {
-                userRef.child(user.id).setValue(user).await()
-                remoteUser = user
-            }
+        updates["${user.id}/username"] = user.username
+        updates["${user.id}/displayName"] = user.displayName
+        updates["${user.id}/updatedAt"] = user.updatedAt ?: System.currentTimeMillis()
 
-            Cache.users[remoteUser.id] = remoteUser
-            Success(Unit)
-        } catch (e: Exception) {
-            Error(e)
-        }
+        userRef.updateChildren(updates).await()
+        emit(Unit)
     }
 
-    suspend fun update(user: User): Result<Unit> = withContext(context) {
-        return@withContext try {
-            val updates: MutableMap<String, Any> = HashMap()
-
-            userRef.child(user.id).get().await().getValue(Post::class.java)
-                ?: return@withContext Error(NotFound("User not found"))
-
-            updates["${user.id}/username"] = user.username
-            updates["${user.id}/displayName"] = user.displayName
-            updates["${user.id}/updatedAt"] = System.currentTimeMillis()
-
-            userRef.updateChildren(updates)
-            Cache.users[user.id] = user
-
-            Success(Unit)
-        } catch (e: Exception) {
-            Error(e)
-        }
+    override suspend fun delete(userId: String): Flow<Unit> = flow {
+        userRef.child(userId)
+            .setValue(null)
+            .await()
+        emit(Unit)
     }
 
-    suspend fun findById(userId: String): Result<User> = withContext(context) {
-        return@withContext try {
-            val doc = userRef.child(userId).get().await()
+    override suspend fun updateFCMToken(userId: String, newToken: String): Flow<Unit> = flow {
+        val updates: MutableMap<String, Any> = HashMap()
 
-            val user = doc.getValue(User::class.java)
-                ?: throw IllegalArgumentException(NotFound("User not found"))
+        updates["${userId}/FCMToken"] = newToken
+        updates["${userId}/updatedAt"] = System.currentTimeMillis()
 
-            Cache.users[user.id] = user
-            Success(user)
-        } catch (e: Exception) {
-            Error(e)
-        }
-    }
-
-    suspend fun updateFCMToken(
-        userId: String, token: String
-    ): Result<Unit> = withContext(context) {
-        return@withContext try {
-            userRef.child(userId).child("messsagingToken")
-                .setValue(token).await()
-
-            Success(Unit)
-        } catch (e: Exception) {
-            Error(e)
-        }
+        userRef.updateChildren(updates).await()
+        emit(Unit)
     }
 }

@@ -1,4 +1,4 @@
-package com.charuniverse.curious.data.entity
+package com.charuniverse.curious.data.model
 
 data class User(
     var id: String = "",
@@ -6,7 +6,7 @@ data class User(
     var displayName: String = "",
     var email: String = "",
     var isVerified: Boolean = false,
-    var profilePictureURL: String = "",
-    var createdAt: Long = System.currentTimeMillis(),
+    var profilePictureUrl: String = "",
+    var createdAt: Long = 0L,
     var updatedAt: Long? = null,
 )

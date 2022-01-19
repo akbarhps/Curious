@@ -1,15 +1,17 @@
 package com.charuniverse.curious.ui.profile.edit
 
-import androidx.lifecycle.*
+import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.charuniverse.curious.data.Result
-import com.charuniverse.curious.data.entity.User
-import com.charuniverse.curious.data.repository.UserRepository
-import com.charuniverse.curious.ui.post.BaseViewState
+import com.charuniverse.curious.data.model.User
+import com.charuniverse.curious.data.source.UserRepository
 import com.charuniverse.curious.util.Event
 import com.charuniverse.curious.util.Preferences
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,36 +20,60 @@ class ProfileEditViewModel @Inject constructor(
     private val userRepository: UserRepository
 ) : ViewModel() {
 
-    private val _viewState = MutableLiveData<Event<BaseViewState>>()
-    val viewState: LiveData<Event<BaseViewState>> = _viewState
+    companion object {
+        private const val TAG = "VMProfileEdit"
+    }
 
-    private val _user = userRepository.observeUser()
-        .distinctUntilChanged().switchMap { return@switchMap handleUserResult(it) }
-    val user: LiveData<User?> = _user
+    private val _viewState = MutableLiveData<Event<ProfileEditViewState>>()
+    val viewState: LiveData<Event<ProfileEditViewState>> = _viewState
 
-    private fun handleUserResult(result: Result<User>): LiveData<User?> {
-        return if (result is Result.Error) MutableLiveData(null)
-        else MutableLiveData((result as Result.Success).data)
+    private fun updateState(
+        isLoading: Boolean = false,
+        error: Exception? = null,
+        isFinished: Boolean = false,
+        user: User? = null,
+    ) {
+        _viewState.value = Event(
+            ProfileEditViewState(
+                isLoading = isLoading,
+                error = error,
+                isFinished = isFinished,
+                user = user
+            )
+        )
     }
 
     init {
         refreshUser()
     }
 
-    private fun refreshUser() = CoroutineScope(Dispatchers.IO).launch {
-        userRepository.refreshObservableUser(Preferences.userId)
+    private var currentUser = User()
+
+    private fun refreshUser() = viewModelScope.launch {
+        userRepository.getById(Preferences.userId, true).collect { res ->
+            resultHandler(res) {
+                currentUser = it
+                updateState(user = it)
+            }
+        }
     }
 
     fun updateUser(username: String, displayName: String) = viewModelScope.launch {
-        _viewState.value = Event(BaseViewState(isLoading = true))
-        val user = user.value!!
+        // TODO: Implement change profile picture
+        currentUser.username = username
+        currentUser.displayName = displayName
+        currentUser.updatedAt = System.currentTimeMillis()
 
-        user.username = username
-        user.displayName = displayName
-
-        userRepository.update(user)
-        _viewState.value = Event(BaseViewState(isCompleted = true))
-        refreshUser()
+        userRepository.update(currentUser).collect { res ->
+            resultHandler(res) { updateState(isFinished = true) }
+        }
     }
 
+    private fun <T> resultHandler(result: Result<T>, onSuccess: (T) -> Unit) {
+        when (result) {
+            is Result.Loading -> updateState(isLoading = true)
+            is Result.Error -> updateState(error = result.exception)
+            is Result.Success -> onSuccess(result.data)
+        }
+    }
 }

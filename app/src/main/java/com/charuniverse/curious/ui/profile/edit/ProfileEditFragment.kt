@@ -2,6 +2,7 @@ package com.charuniverse.curious.ui.profile.edit
 
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -31,15 +32,18 @@ class ProfileEditFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.user.observe(viewLifecycleOwner, {
-            if (it == null) return@observe
-            binding.user = it
-        })
+        viewModel.viewState.observe(viewLifecycleOwner, EventObserver { state ->
+            Dialog.toggleProgressBar(state.isLoading)
 
-        viewModel.viewState.observe(viewLifecycleOwner, EventObserver {
-            Dialog.toggleProgressBar(it.isLoading)
+            state.error?.let {
+                Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
+            }
 
-            if (it.isCompleted) {
+            state.user?.let {
+                binding.user = it
+            }
+
+            if (state.isFinished) {
                 findNavController().navigateUp()
             }
         })

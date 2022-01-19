@@ -21,7 +21,7 @@
             android:id="@+id/swipeLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:onRefreshListener="@{() -> viewModel.refreshPosts()}">
+            app:onRefreshListener="@{() -> viewModel.refreshPosts(true)}">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/postsList"

@@ -1,6 +1,7 @@
 package com.charuniverse.curious.ui.post.detail
 
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -12,7 +13,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.charuniverse.curious.R
 import com.charuniverse.curious.databinding.FragmentPostDetailBinding
-import com.charuniverse.curious.exception.NotFound
 import com.charuniverse.curious.util.EventObserver
 import com.charuniverse.curious.util.Preferences
 import dagger.hilt.android.AndroidEntryPoint
@@ -21,62 +21,52 @@ import dagger.hilt.android.AndroidEntryPoint
 class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
 
     private val viewModel: PostDetailViewModel by viewModels()
+
     private val args: PostDetailFragmentArgs by navArgs()
 
     private lateinit var binding: FragmentPostDetailBinding
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         viewModel.setPostId(args.postId)
-        val postCommentsAdapter = PostCommentsAdapter(viewModel)
-
-        //TODO: refactor this
-        var postTitle = ""
-
         binding = FragmentPostDetailBinding.bind(view).also {
             it.viewModel = viewModel
             it.lifecycleOwner = this
-            it.commentsList.adapter = postCommentsAdapter
+            it.commentsList.adapter = PostCommentsAdapter(viewModel)
 
             it.fabOpenCreateComment.setOnClickListener {
-                val dest = PostDetailFragmentDirections
-                    .actionPostDetailFragmentToCommentCreateEditFragment(args.postId, postTitle)
-                findNavController().navigate(dest)
+                openCreateEditCommentFragment()
             }
         }
-
-        viewModel.post.observe(viewLifecycleOwner, {
-            postTitle = it.title
-            setHasOptionsMenu(it.createdBy == Preferences.userId)
-            postCommentsAdapter.submitList(it.comments?.values?.toList())
-        })
 
         setupEventObserver()
     }
 
     private fun setupEventObserver() {
-        viewModel.selectedUserId.observe(viewLifecycleOwner, EventObserver {
-            val dest = PostDetailFragmentDirections
-                .actionGlobalProfileFragment(it)
-            findNavController().navigate(dest)
-        })
-
         viewModel.viewState.observe(viewLifecycleOwner, EventObserver { state ->
             binding.scrollLayout.isRefreshing = state.isLoading
 
             state.error?.let {
-                if (it is NotFound) {
-                    Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_SHORT)
-                        .show()
-
-                    viewModel.refreshPost()
-                    findNavController().navigateUp()
-
-                    return@EventObserver
-                }
+                Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_SHORT).show()
             }
 
-            if (state.isCompleted) {
+            state.post?.let { post ->
+                setHasOptionsMenu(post.createdBy == Preferences.userId)
+                binding.post = post
+                (binding.commentsList.adapter as PostCommentsAdapter)
+                    .submitList(post.comments.values.sortedBy { it.createdAt })
+            }
+
+            state.selectedUserId?.let {
+                openUserProfileFragment(it)
+            }
+
+            state.selectedCommentId?.let {
+                openCreateEditCommentFragment(it)
+            }
+
+            if (state.isFinished) {
                 findNavController().navigateUp()
             }
         })
@@ -104,6 +94,22 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
         val dest = PostDetailFragmentDirections
             .actionPostDetailFragmentToPostCreateEditFragment(args.postId)
         findNavController().navigate(dest)
+    }
+
+    private fun openUserProfileFragment(userId: String) {
+        val dest = PostDetailFragmentDirections.actionGlobalProfileFragment(userId)
+        findNavController().navigate(dest)
+    }
+
+    private fun openCreateEditCommentFragment(commentId: String? = null) {
+        val dest = PostDetailFragmentDirections
+            .actionPostDetailFragmentToCommentCreateEditFragment(args.postId, commentId)
+        findNavController().navigate(dest)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.refreshPost(false)
     }
 
 }

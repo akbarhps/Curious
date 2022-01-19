@@ -1,11 +1,12 @@
 package com.charuniverse.curious.ui.post.feed
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.charuniverse.curious.data.model.PostDetail
+import com.charuniverse.curious.data.dto.PostDetail
 import com.charuniverse.curious.databinding.ViewPostFeedItemBinding
 
 class PostFeedAdapter(private val viewModel: PostFeedViewModel) :

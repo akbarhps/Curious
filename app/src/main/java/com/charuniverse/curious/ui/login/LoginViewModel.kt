@@ -1,18 +1,20 @@
 package com.charuniverse.curious.ui.login
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charuniverse.curious.data.Result
-import com.charuniverse.curious.data.repository.AuthRepository
-import com.charuniverse.curious.data.repository.UserRepository
-import com.charuniverse.curious.ui.post.BaseViewState
+import com.charuniverse.curious.data.source.AuthRepository
+import com.charuniverse.curious.data.source.UserRepository
 import com.charuniverse.curious.util.Event
 import com.charuniverse.curious.util.Preferences
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,19 +28,26 @@ class LoginViewModel @Inject constructor(
         private const val TAG = "LoginViewModel"
     }
 
-    private val _viewState = MutableLiveData<Event<BaseViewState>>()
-    val viewState: LiveData<Event<BaseViewState>> = _viewState
+    private val _viewState = MutableLiveData<Event<LoginViewState>>()
+    val viewState: LiveData<Event<LoginViewState>> = _viewState
 
     private fun updateViewState(
-        isLoading: Boolean = false, error: Exception? = null, isCompleted: Boolean = false
+        isLoading: Boolean = false,
+        error: Exception? = null,
+        isLoggedIn: Boolean = false
     ) {
-        _viewState.value =
-            Event(BaseViewState(isLoading = isLoading, error = error, isCompleted = isCompleted))
+        _viewState.value = Event(
+            LoginViewState(
+                isLoading = isLoading,
+                error = error,
+                isLoggedIn = isLoggedIn
+            )
+        )
     }
 
     init {
         authRepository.getLoginUser()?.let {
-            updateViewState(isCompleted = true)
+            updateViewState(isLoggedIn = true)
         }
     }
 
@@ -47,23 +56,34 @@ class LoginViewModel @Inject constructor(
     }
 
     fun loginWithGoogle(accountIdToken: String) = viewModelScope.launch {
-        updateViewState(isLoading = true)
+        var isError = false
+        authRepository.loginWithGoogle(accountIdToken)
+            .catch { throwable ->
+                updateViewState(error = Exception(throwable.message))
+                isError = true
+            }
+            .collect {}
 
-        val loginResult = authRepository.loginWithGoogle(accountIdToken)
-        if (loginResult is Result.Error) {
-            updateViewState(error = loginResult.exception)
-            return@launch
-        }
+        if (isError) return@launch
 
         val loginUser = authRepository.getLoginUser()!!
-        val saveResult = userRepository.saveIfNotExist(loginUser)
-        if (saveResult is Result.Error) {
-            updateViewState(error = saveResult.exception)
-            return@launch
+        userRepository.create(loginUser).collect {
+            resultHandler(it) {
+                Preferences.userId = loginUser.id
+                updateViewState(isLoggedIn = true)
+            }
         }
+    }
 
-        Preferences.userId = loginUser.id
-        updateViewState(isCompleted = true)
+    private fun <T> resultHandler(result: Result<T>, onSuccess: (T) -> Unit) {
+        when (result) {
+            is Result.Loading -> updateViewState(isLoading = true)
+            is Result.Success -> onSuccess(result.data)
+            is Result.Error -> {
+                Log.e(TAG, "resultHandler: ${result.exception.message}", result.exception)
+                updateViewState(error = result.exception)
+            }
+        }
     }
 
 }

@@ -2,11 +2,11 @@ package com.charuniverse.curious.ui.profile
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.charuniverse.curious.data.model.PostDetail
+import com.charuniverse.curious.data.dto.PostDetail
 import com.charuniverse.curious.databinding.ViewPostUserItemBinding
-import com.charuniverse.curious.ui.post.feed.TaskDiffCallback
 
 class UserPostAdapter(private val viewModel: ProfileViewModel) :
     ListAdapter<PostDetail, UserPostAdapter.ViewHolder>(TaskDiffCallback()) {
@@ -34,5 +34,15 @@ class UserPostAdapter(private val viewModel: ProfileViewModel) :
             binding.viewModel = viewModel
             binding.executePendingBindings()
         }
+    }
+}
+
+class TaskDiffCallback : DiffUtil.ItemCallback<PostDetail>() {
+    override fun areItemsTheSame(oldItem: PostDetail, newItem: PostDetail): Boolean {
+        return oldItem.id == newItem.id
+    }
+
+    override fun areContentsTheSame(oldItem: PostDetail, newItem: PostDetail): Boolean {
+        return oldItem == newItem
     }
 }

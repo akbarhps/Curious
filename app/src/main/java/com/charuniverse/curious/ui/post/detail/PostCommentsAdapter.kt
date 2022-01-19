@@ -1,14 +1,16 @@
 package com.charuniverse.curious.ui.post.detail
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.charuniverse.curious.R
-import com.charuniverse.curious.data.model.CommentDetail
+import com.charuniverse.curious.data.dto.CommentDetail
 import com.charuniverse.curious.databinding.ViewPostCommentItemBinding
+import com.charuniverse.curious.util.Preferences
 
 class PostCommentsAdapter(private val viewModel: PostDetailViewModel) :
     ListAdapter<CommentDetail, PostCommentsAdapter.ViewHolder>(TaskDiffCallback()) {
@@ -36,16 +38,25 @@ class PostCommentsAdapter(private val viewModel: PostDetailViewModel) :
         fun bind(viewModel: PostDetailViewModel, comment: CommentDetail) = binding.apply {
             this.comment = comment
 
+            binding.ivOpenCommentMenu.visibility = if (comment.createdBy == Preferences.userId) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
+
             ivOpenCommentMenu.setOnClickListener {
                 val menu = PopupMenu(it.context, it)
-                menu.menuInflater.inflate(R.menu.menu_post_detail, menu.menu)
+
+                menu.menuInflater.inflate(R.menu.menu_edit_delete, menu.menu)
+
                 menu.setOnMenuItemClickListener { item ->
                     when (item.itemId) {
-                        R.id.postCreateEditFragment -> {}
-                        R.id.delete_post -> viewModel.deleteComment(comment.id)
+                        R.id.edit_item -> viewModel.setSelectedCommentId(comment.id)
+                        R.id.delete_item -> viewModel.deleteComment(comment.id)
                     }
                     true
                 }
+
                 menu.show()
             }
 

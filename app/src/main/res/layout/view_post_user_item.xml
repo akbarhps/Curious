@@ -6,7 +6,7 @@
 
         <import type="com.charuniverse.curious.ui.profile.ProfileViewModel" />
 
-        <import type="com.charuniverse.curious.data.model.PostDetail" />
+        <import type="com.charuniverse.curious.data.dto.PostDetail" />
 
         <import type="com.charuniverse.curious.R" />
 

@@ -1,100 +1,113 @@
 package com.charuniverse.curious.ui.post.detail
 
 import android.util.Log
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.charuniverse.curious.data.Result
-import com.charuniverse.curious.data.model.PostDetail
-import com.charuniverse.curious.data.repository.PostRepository
+import com.charuniverse.curious.data.dto.PostDetail
+import com.charuniverse.curious.data.source.CommentRepository
+import com.charuniverse.curious.data.source.PostRepository
 import com.charuniverse.curious.exception.NotFound
-import com.charuniverse.curious.ui.post.BaseViewState
 import com.charuniverse.curious.util.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class PostDetailViewModel @Inject constructor(
     private val postRepository: PostRepository,
-) : ViewModel() {
+    private val commentRepository: CommentRepository,
+) :
+    ViewModel() {
 
     companion object {
-        private const val TAG = "PostDetailViewModel"
+        private const val TAG = "VMPostDetail"
+        private var isFirstLoad = true
     }
 
-    private val _viewState = MutableLiveData<Event<BaseViewState>>()
-    val viewState: LiveData<Event<BaseViewState>> = _viewState
+    private val _viewState = MutableLiveData<Event<PostDetailViewState>>()
+    val viewState: LiveData<Event<PostDetailViewState>> = _viewState
 
     private fun updateState(
-        isLoading: Boolean = false, error: Exception? = null, isCompleted: Boolean = false,
+        isLoading: Boolean = false,
+        isFinished: Boolean = false,
+        error: Exception? = null,
+        post: PostDetail? = null,
+        selectedUserId: String? = null,
+        selectedCommentId: String? = null,
     ) {
         _viewState.value = Event(
-            BaseViewState(isLoading = isLoading, error = error, isCompleted = isCompleted)
+            PostDetailViewState(
+                isLoading = isLoading,
+                isFinished = isFinished,
+                error = error,
+                post = post,
+                selectedUserId = selectedUserId,
+                selectedCommentId = selectedCommentId,
+            )
         )
     }
 
-    private val _postId = MutableLiveData<String>()
+    private lateinit var currentPostId: String
 
     fun setPostId(id: String) {
         if (id.isBlank()) {
-            updateState(error = NotFound("Post not found"))
+            updateState(isFinished = true, error = NotFound("Post not found"))
             return
         }
 
-        updateState(isLoading = true)
-        _postId.value = id
-    }
+        currentPostId = id
+        refreshPost(isFirstLoad)
 
-    private val _post = _postId.switchMap { id ->
-        postRepository.observePost(id).map { handlePostResult(it) }
-    }
-    val post: LiveData<PostDetail> = _post
-
-    private fun handlePostResult(result: Result<PostDetail>): PostDetail {
-        return when (result) {
-            is Result.Loading -> PostDetail()
-            is Result.Error -> {
-                Log.e(TAG, "handleResult: ${result.exception.message}", result.exception)
-                updateState(error = result.exception)
-                PostDetail()
-            }
-            is Result.Success -> {
-                updateState(isLoading = false)
-                result.data
-            }
+        if (isFirstLoad) {
+            isFirstLoad = false
         }
     }
 
-    private val _selectedUserId = MutableLiveData<Event<String>>()
-    val selectedUserId: LiveData<Event<String>> = _selectedUserId
+    fun refreshPost(forceRefresh: Boolean = false) = viewModelScope.launch {
+        Log.i(TAG, "refreshPost: Terpanggil")
+        postRepository.observePost(currentPostId, forceRefresh).collect {
+            handleResult(it) { post -> updateState(post = post) }
+        }
+    }
 
     fun setSelectedUserId(userId: String) {
-        _selectedUserId.value = Event(userId)
+        updateState(selectedUserId = userId)
     }
 
-    fun refreshPost() = CoroutineScope(Dispatchers.IO).launch {
-        postRepository.refreshPosts()
+    fun setSelectedCommentId(commentId: String) {
+        updateState(selectedCommentId = commentId)
     }
 
-    fun togglePostLove() = viewModelScope.launch {
-        postRepository.toggleLove(_postId.value!!)
-        refreshPost()
+    fun toggleLove() = viewModelScope.launch {
+        postRepository.toggleLove(currentPostId).collect {
+            handleResult(it) { refreshPost(false) }
+        }
     }
 
     fun deleteComment(commentId: String) = viewModelScope.launch {
-        postRepository.deleteComment(_postId.value!!, commentId)
-        refreshPost()
+        commentRepository.delete(currentPostId, commentId).collect {
+            handleResult(it) { refreshPost(false) }
+        }
     }
 
     fun deletePost() = viewModelScope.launch {
-        val result = postRepository.delete(_postId.value!!)
-        if (result is Result.Error) {
-            Log.e(TAG, "deletePost: ${result.exception.message}", result.exception)
-            updateState(error = result.exception)
-        } else {
-            refreshPost()
-            updateState(isCompleted = true)
+        postRepository.delete(currentPostId).collect {
+            handleResult(it) { updateState(isFinished = true) }
+        }
+    }
+
+    private fun <T> handleResult(result: Result<T>, successCallback: (T) -> Unit) {
+        when (result) {
+            is Result.Loading -> updateState(isLoading = true)
+            is Result.Error -> {
+                Log.e(TAG, "handleResult: ${result.exception.message}", result.exception)
+                updateState(error = result.exception)
+            }
+            is Result.Success -> successCallback(result.data)
         }
     }
 }
