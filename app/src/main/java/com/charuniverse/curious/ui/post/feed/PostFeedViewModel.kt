@@ -20,6 +20,7 @@ class PostFeedViewModel @Inject constructor(
 
     companion object {
         private const val TAG = "PostViewModel"
+        private var isFirstLoad = true
     }
 
     private val _viewState = MutableLiveData<Event<PostFeedViewState>>()
@@ -42,30 +43,33 @@ class PostFeedViewModel @Inject constructor(
     }
 
     init {
-        refreshPosts()
+        refreshPosts(isFirstLoad)
+        if (isFirstLoad) isFirstLoad = false
+    }
+
+    fun setSelectedPostId(id: String) {
+        updateState(selectedPostId = id)
     }
 
     fun refreshPosts(forceRefresh: Boolean = false) = viewModelScope.launch {
-        postRepository.observePosts(forceRefresh = forceRefresh).collect { result ->
-            when (result) {
-                is Result.Loading -> updateState(isLoading = true)
-                is Result.Error -> updateState(error = result.exception)
-                is Result.Success -> updateState(posts = result.data.sortedByDescending { it.createdAt })
+        postRepository.observePosts(forceRefresh = forceRefresh).collect { res ->
+            handleResult(res) { posts ->
+                updateState(posts = posts.sortedByDescending { it.createdAt })
             }
         }
     }
 
     fun togglePostLove(postId: String) = viewModelScope.launch {
         postRepository.toggleLove(postId).collect {
-            when (it) {
-                is Result.Loading -> updateState(isLoading = true)
-                is Result.Error -> updateState(error = it.exception)
-                is Result.Success -> refreshPosts(false)
-            }
+            handleResult(it) { refreshPosts(false) }
         }
     }
 
-    fun setSelectedPostId(id: String) {
-        updateState(selectedPostId = id)
+    private fun <T> handleResult(result: Result<T>, onSuccess: (T) -> Unit) {
+        when (result) {
+            is Result.Loading -> updateState(isLoading = true)
+            is Result.Error -> updateState(error = result.exception)
+            is Result.Success -> onSuccess(result.data)
+        }
     }
 }

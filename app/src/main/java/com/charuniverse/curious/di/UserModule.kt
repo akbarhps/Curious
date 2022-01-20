@@ -1,7 +1,6 @@
 package com.charuniverse.curious.di
 
 import com.charuniverse.curious.data.source.UserRepository
-import com.charuniverse.curious.data.source.remote.MessagingRemoteDataSource
 import com.charuniverse.curious.data.source.remote.UserRemoteDataSource
 import dagger.Module
 import dagger.Provides
@@ -17,8 +16,7 @@ object UserModule {
     @Provides
     fun provideUserRepository(
         @AppModule.RemoteUserDataSource userRemoteDataSource: UserRemoteDataSource,
-        @AppModule.RemoteMessagingDataSource messagingRemoteDataSource: MessagingRemoteDataSource,
     ): UserRepository {
-        return UserRepository(userRemoteDataSource, messagingRemoteDataSource)
+        return UserRepository(userRemoteDataSource)
     }
 }

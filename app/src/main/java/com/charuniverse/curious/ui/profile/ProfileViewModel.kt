@@ -14,7 +14,6 @@ import com.charuniverse.curious.data.source.PostRepository
 import com.charuniverse.curious.data.source.UserRepository
 import com.charuniverse.curious.util.Event
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -89,9 +88,9 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun logOut(context: Context) = viewModelScope.launch {
-        authRepository.logOut(context)
-            .catch { throwable -> updateViewState(error = Exception(throwable.message)) }
-            .collect { updateViewState(isLoggedOut = true) }
+        authRepository.logOut(context).collect { res ->
+            resultHandler(res) { updateViewState(isLoggedOut = true) }
+        }
     }
 
     private fun <T> resultHandler(result: Result<T>, onSuccess: (T) -> Unit) {

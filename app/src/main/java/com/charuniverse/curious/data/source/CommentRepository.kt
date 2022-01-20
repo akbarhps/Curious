@@ -1,6 +1,5 @@
 package com.charuniverse.curious.data.source
 
-import android.util.Log
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.model.Comment
 import com.charuniverse.curious.data.model.NotificationData
@@ -20,34 +19,33 @@ class CommentRepository(
     private val inMemoryPost = InMemoryPostDataSource
 
     suspend fun create(comment: Comment): Flow<Result<Unit>> = flow {
-        emit(Result.Loading)
         try {
+            emit(Result.Loading)
+
             commentRemoteDataSource.create(comment)
             inMemoryPost.addPostComment(comment)
+
             emit(Result.Success(Unit))
-        } catch (e: Exception) {
-            return@flow emit(Result.Error(e))
-        }
 
-        // doesn't matter if the notification failed to send
-        val notification = NotificationBuilder.build(
-            comment.postId,
-            NotificationData.EVENT_POST_COMMENT,
-            comment.content,
-        ) ?: return@flow
+            val notification = NotificationBuilder.build(
+                comment.postId,
+                NotificationData.EVENT_POST_COMMENT,
+                comment.content,
+            ) ?: return@flow emit(Result.Success(Unit))
 
-        try {
             notificationAPI.send(notification)
         } catch (e: Exception) {
-            Log.e("CommentRepository", "create: ${e.message}", e)
+            emit(Result.Error(e))
         }
     }
 
     suspend fun update(comment: Comment): Flow<Result<Unit>> = flow {
-        emit(Result.Loading)
         try {
+            emit(Result.Loading)
+
             commentRemoteDataSource.update(comment)
             inMemoryPost.updatePostComment(comment)
+
             emit(Result.Success(Unit))
         } catch (e: Exception) {
             emit(Result.Error(e))
@@ -55,10 +53,12 @@ class CommentRepository(
     }
 
     suspend fun delete(postId: String, commentId: String): Flow<Result<Unit>> = flow {
-        emit(Result.Loading)
         try {
+            emit(Result.Loading)
+
             commentRemoteDataSource.delete(postId, commentId)
             inMemoryPost.deletePostComment(postId, commentId)
+
             emit(Result.Success(Unit))
         } catch (e: Exception) {
             emit(Result.Error(e))
@@ -85,8 +85,9 @@ class CommentRepository(
     }
 
     suspend fun toggleLove(postId: String, commentId: String): Flow<Result<Unit>> = flow {
-        emit(Result.Loading)
         try {
+            emit(Result.Loading)
+
             val comment = commentRemoteDataSource.getById(postId, commentId)
                 ?: throw IllegalArgumentException("Comment not found")
 
@@ -94,6 +95,7 @@ class CommentRepository(
             commentRemoteDataSource.toggleLove(postId, commentId, hasLove)
 
             inMemoryPost.togglePostCommentLove(postId, commentId, hasLove)
+
             emit(Result.Success(Unit))
         } catch (e: Exception) {
             emit(Result.Error(e))

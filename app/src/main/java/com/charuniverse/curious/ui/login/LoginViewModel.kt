@@ -13,7 +13,6 @@ import com.charuniverse.curious.data.source.UserRepository
 import com.charuniverse.curious.util.Event
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -57,18 +56,7 @@ class LoginViewModel @Inject constructor(
     }
 
     fun loginWithGoogle(accountIdToken: String) = viewModelScope.launch {
-        var isError = false
-        authRepository.loginWithGoogle(accountIdToken)
-            .catch { throwable ->
-                updateViewState(error = Exception(throwable.message))
-                isError = true
-            }
-            .collect {}
-
-        if (isError) return@launch
-
-        val loginUser = authRepository.getLoginUser()!!
-        userRepository.login(loginUser).collect { res ->
+        authRepository.loginWithGoogle(accountIdToken).collect { res ->
             resultHandler(res) { updateViewState(isLoggedIn = true) }
         }
     }

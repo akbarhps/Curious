@@ -63,13 +63,15 @@ class PostRepository(
             }
         }
 
-        emit(Result.Loading)
         inMemoryPost.clear()
         inMemoryUser.clear()
 
         try {
+            emit(Result.Loading)
+
             val posts = postRemoteDataSource.getAll(page, limit)
                 .map { handlePost(it)!! }
+
             emit(Result.Success(posts))
         } catch (e: Exception) {
             emit(Result.Error(e))
@@ -87,10 +89,12 @@ class PostRepository(
             }
         }
 
-        emit(Result.Loading)
         try {
+            emit(Result.Loading)
+
             val posts = postRemoteDataSource.getByUserId(userId)
                 .map { handlePost(it)!! }
+
             emit(Result.Success(posts))
         } catch (e: Exception) {
             emit(Result.Error(e))
@@ -108,11 +112,13 @@ class PostRepository(
             }
         }
 
-        emit(Result.Loading)
         try {
+            emit(Result.Loading)
+
             var post = postRemoteDataSource.getById(postId)
             post = handlePost(post)
                 ?: throw IllegalArgumentException("Post not found")
+
             emit(Result.Success(post))
         } catch (e: Exception) {
             emit(Result.Error(e))
@@ -120,10 +126,12 @@ class PostRepository(
     }
 
     suspend fun create(post: Post): Flow<Result<Unit>> = flow {
-        emit(Result.Loading)
         try {
+            emit(Result.Loading)
+
             postRemoteDataSource.create(post)
             inMemoryPost.add(post)
+
             emit(Result.Success(Unit))
         } catch (e: Exception) {
             emit(Result.Error(e))
@@ -131,10 +139,12 @@ class PostRepository(
     }
 
     suspend fun update(post: Post): Flow<Result<Unit>> = flow {
-        emit(Result.Loading)
         try {
+            emit(Result.Loading)
+
             postRemoteDataSource.update(post)
             inMemoryPost.updatePost(post)
+
             emit(Result.Success(Unit))
         } catch (e: Exception) {
             emit(Result.Error(e))
@@ -142,10 +152,12 @@ class PostRepository(
     }
 
     suspend fun delete(postId: String): Flow<Result<Unit>> = flow {
-        emit(Result.Loading)
         try {
+            emit(Result.Loading)
+
             postRemoteDataSource.delete(postId)
             inMemoryPost.delete(postId)
+
             emit(Result.Success(Unit))
         } catch (e: Exception) {
             emit(Result.Error(e))
@@ -153,27 +165,28 @@ class PostRepository(
     }
 
     suspend fun toggleLove(postId: String): Flow<Result<Unit>> = flow {
-        emit(Result.Loading)
-
         try {
+            emit(Result.Loading)
+
             val post = postRemoteDataSource.getById(postId)
                 ?: throw IllegalArgumentException("Post not found")
+
             val isUserCurrentlyLovePost = post.lovers.containsKey(Preferences.userId)
             postRemoteDataSource.toggleLove(postId, isUserCurrentlyLovePost)
-
             inMemoryPost.togglePostLove(postId, isUserCurrentlyLovePost)
+
             emit(Result.Success(Unit))
             if (isUserCurrentlyLovePost) return@flow
         } catch (e: Exception) {
             emit(Result.Error(e))
         }
 
-        val notification = NotificationBuilder.build(
-            postId,
-            NotificationData.EVENT_POST_LIKE
-        ) ?: return@flow
-
         try {
+            val notification = NotificationBuilder.build(
+                postId,
+                NotificationData.EVENT_POST_LIKE
+            ) ?: return@flow
+
             notificationAPI.send(notification)
         } catch (e: Exception) {
             Log.e("PostRepository", "toggleLove: ${e.message}", e)

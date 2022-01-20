@@ -9,29 +9,9 @@ import kotlinx.coroutines.flow.*
 
 class UserRepository(
     private val userRemoteDataSource: UserRemoteDataSource,
-    private val messagingRemoteDataSource: MessagingRemoteDataSource,
 ) {
 
     private val inMemoryUser = InMemoryUserDataSource
-
-    suspend fun login(loginUser: User): Flow<Result<Unit>> = flow {
-        emit(Result.Loading)
-
-        try {
-            val remoteUser = userRemoteDataSource.getById(loginUser.id)
-            if (remoteUser == null) userRemoteDataSource.create(loginUser)
-
-            val token = messagingRemoteDataSource.getToken()
-                ?: throw Exception("User token not found")
-
-            userRemoteDataSource.updateFCMToken(loginUser.id, token)
-
-            inMemoryUser.add(loginUser)
-            emit(Result.Success(Unit))
-        } catch (e: Exception) {
-            emit(Result.Error(e))
-        }
-    }
 
     suspend fun getById(userId: String, forceRefresh: Boolean): Flow<Result<User>> = flow {
         if (!forceRefresh) {
@@ -40,8 +20,8 @@ class UserRepository(
             }
         }
 
-        emit(Result.Loading)
         try {
+            emit(Result.Loading)
             val user = userRemoteDataSource.getById(userId)
                 ?: throw IllegalArgumentException("User not found")
 
@@ -53,8 +33,8 @@ class UserRepository(
     }
 
     suspend fun update(user: User): Flow<Result<Unit>> = flow {
-        emit(Result.Loading)
         try {
+            emit(Result.Loading)
             userRemoteDataSource.update(user)
             inMemoryUser.update(user)
             emit(Result.Success(Unit))
@@ -64,8 +44,8 @@ class UserRepository(
     }
 
     suspend fun delete(userId: String): Flow<Result<Unit>> = flow {
-        emit(Result.Loading)
         try {
+            emit(Result.Loading)
             userRemoteDataSource.delete(userId)
             emit(Result.Success(Unit))
         } catch (e: Exception) {
