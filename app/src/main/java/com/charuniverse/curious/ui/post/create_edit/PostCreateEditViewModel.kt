@@ -58,12 +58,8 @@ class PostCreateEditViewModel @Inject constructor(private val postRepository: Po
 
     private fun refreshPost() = viewModelScope.launch {
         if (currentPostId == null) return@launch
-        postRepository.observePost(currentPostId!!, false).collect {
-            when (it) {
-                is Result.Loading -> updateState(isLoading = true)
-                is Result.Error -> updateState(error = it.exception)
-                is Result.Success -> updateState(post = it.data.toDomainPost())
-            }
+        postRepository.observePost(currentPostId!!, false).collect { res ->
+            resultHandler(res) { updateState(post = it.toDomainPost()) }
         }
     }
 
@@ -113,21 +109,20 @@ class PostCreateEditViewModel @Inject constructor(private val postRepository: Po
 
         if (currentPostId == null) {
             postRepository.create(newPost).collect {
-                createUpdateResultHandler(it)
+                resultHandler(it) { updateState(isCompleted = true) }
             }
         } else {
             postRepository.update(newPost).collect {
-                createUpdateResultHandler(it)
+                resultHandler(it) { updateState(isCompleted = true) }
             }
         }
     }
 
-    //TODO: Refactor
-    private fun createUpdateResultHandler(result: Result<Unit>) {
+    private fun <T> resultHandler(result: Result<T>, onSuccess: (T) -> Unit) {
         when (result) {
             is Result.Loading -> updateState(isLoading = true)
             is Result.Error -> updateState(error = result.exception)
-            is Result.Success -> updateState(isCompleted = true)
+            is Result.Success -> onSuccess(result.data)
         }
     }
 }
