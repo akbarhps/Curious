@@ -1,15 +1,16 @@
 package com.charuniverse.curious.di
 
-import com.charuniverse.curious.data.source.remote.CommentRemoteDataSource
-import com.charuniverse.curious.data.source.remote.PostRemoteDataSource
-import com.charuniverse.curious.data.source.remote.UserRemoteDataSource
+import com.charuniverse.curious.data.source.remote.*
+import com.charuniverse.curious.util.Constant
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
@@ -26,9 +27,8 @@ object AppModule {
     @Provides
     fun provideUserRemoteDataSource(
         firebaseDatabase: FirebaseDatabase,
-        dispatcherContext: CoroutineDispatcher
     ): UserRemoteDataSource {
-        return UserRemoteDataSource(firebaseDatabase, dispatcherContext)
+        return UserRemoteDataSource(firebaseDatabase)
     }
 
     @Qualifier
@@ -40,9 +40,8 @@ object AppModule {
     @Provides
     fun providePostRemoteDataSource(
         firebaseDatabase: FirebaseDatabase,
-        dispatcherContext: CoroutineDispatcher
     ): PostRemoteDataSource {
-        return PostRemoteDataSource(firebaseDatabase, dispatcherContext)
+        return PostRemoteDataSource(firebaseDatabase)
     }
 
     @Qualifier
@@ -54,9 +53,31 @@ object AppModule {
     @Provides
     fun provideCommentRemoteDataSource(
         firebaseDatabase: FirebaseDatabase,
-        dispatcherContext: CoroutineDispatcher
     ): CommentRemoteDataSource {
-        return CommentRemoteDataSource(firebaseDatabase, dispatcherContext)
+        return CommentRemoteDataSource(firebaseDatabase)
+    }
+
+    @Qualifier
+    @Retention(AnnotationRetention.RUNTIME)
+    annotation class RemoteMessagingDataSource
+
+    @Singleton
+    @AppModule.RemoteMessagingDataSource
+    @Provides
+    fun provideMessagingRemoteDataSource(
+        firebaseMessaging: FirebaseMessaging
+    ): MessagingRemoteDataSource {
+        return MessagingRemoteDataSource(firebaseMessaging)
+    }
+
+    @Provides
+    @Singleton
+    fun provideNotificationAPI(): NotificationAPI {
+        return Retrofit.Builder()
+            .baseUrl(Constant.FCM_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(NotificationAPI::class.java)
     }
 
     @Singleton

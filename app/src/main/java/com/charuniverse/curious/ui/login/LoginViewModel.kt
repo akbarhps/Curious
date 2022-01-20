@@ -8,9 +8,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.source.AuthRepository
+import com.charuniverse.curious.data.source.NotificationRepository
 import com.charuniverse.curious.data.source.UserRepository
 import com.charuniverse.curious.util.Event
-import com.charuniverse.curious.util.Preferences
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.catch
@@ -22,6 +22,7 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val authRepository: AuthRepository,
+    private val notificationRepository: NotificationRepository,
 ) : ViewModel() {
 
     companion object {
@@ -67,11 +68,8 @@ class LoginViewModel @Inject constructor(
         if (isError) return@launch
 
         val loginUser = authRepository.getLoginUser()!!
-        userRepository.create(loginUser).collect {
-            resultHandler(it) {
-                Preferences.userId = loginUser.id
-                updateViewState(isLoggedIn = true)
-            }
+        userRepository.login(loginUser).collect { res ->
+            resultHandler(res) { updateViewState(isLoggedIn = true) }
         }
     }
 

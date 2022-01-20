@@ -1,19 +1,24 @@
 package com.charuniverse.curious.data.source
 
+import android.util.Log
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.dto.PostDetail
+import com.charuniverse.curious.data.model.NotificationData
 import com.charuniverse.curious.data.model.Post
 import com.charuniverse.curious.data.model.User
 import com.charuniverse.curious.data.source.in_memory.InMemoryPostDataSource
 import com.charuniverse.curious.data.source.in_memory.InMemoryUserDataSource
+import com.charuniverse.curious.data.source.remote.NotificationAPI
 import com.charuniverse.curious.data.source.remote.PostRemoteDataSource
 import com.charuniverse.curious.data.source.remote.UserRemoteDataSource
+import com.charuniverse.curious.util.NotificationBuilder
 import com.charuniverse.curious.util.Preferences
 import kotlinx.coroutines.flow.*
 
 class PostRepository(
     private val postRemoteDataSource: PostRemoteDataSource,
     private val userRemoteDataSource: UserRemoteDataSource,
+    private val notificationAPI: NotificationAPI,
 ) {
 
     private val inMemoryPost = InMemoryPostDataSource
@@ -25,11 +30,12 @@ class PostRepository(
             return user
         }
 
-        userRemoteDataSource.getById(userId)
-            .catch {}
-            .collect { user = it }
-
-        return user?.also { inMemoryUser.add(it) }
+        return try {
+            user = userRemoteDataSource.getById(userId)
+            user?.also { inMemoryUser.add(it) }
+        } catch (e: Exception) {
+            null
+        }
     }
 
     private suspend fun handlePost(post: PostDetail?): PostDetail? = post?.let {
@@ -61,16 +67,13 @@ class PostRepository(
         inMemoryPost.clear()
         inMemoryUser.clear()
 
-        postRemoteDataSource.getAll(page, limit)
-            .catch { throwable ->
-                emit(Result.Error(Exception(throwable.message)))
-            }
-            .onEach { posts ->
-                posts.map { handlePost(it) }
-            }
-            .collect {
-                emit(Result.Success(it))
-            }
+        try {
+            val posts = postRemoteDataSource.getAll(page, limit)
+                .map { handlePost(it)!! }
+            emit(Result.Success(posts))
+        } catch (e: Exception) {
+            emit(Result.Error(e))
+        }
     }
 
     suspend fun observeUserPosts(
@@ -85,16 +88,13 @@ class PostRepository(
         }
 
         emit(Result.Loading)
-        postRemoteDataSource.getByUserId(userId)
-            .catch { throwable ->
-                emit(Result.Error(Exception(throwable.message)))
-            }
-            .onEach { posts ->
-                posts.map { handlePost(it) }
-            }
-            .collect {
-                emit(Result.Success(it))
-            }
+        try {
+            val posts = postRemoteDataSource.getByUserId(userId)
+                .map { handlePost(it)!! }
+            emit(Result.Success(posts))
+        } catch (e: Exception) {
+            emit(Result.Error(e))
+        }
     }
 
     suspend fun observePost(
@@ -109,75 +109,74 @@ class PostRepository(
         }
 
         emit(Result.Loading)
-        postRemoteDataSource.getById(postId)
-            .catch { throwable ->
-                emit(Result.Error(Exception(throwable.message)))
-            }
-            .map {
-                handlePost(it)
-            }
-            .collect {
-                if (it == null) {
-                    emit(Result.Error(IllegalArgumentException("Post not found")))
-                } else {
-                    emit(Result.Success(it))
-                }
-            }
+        try {
+            var post = postRemoteDataSource.getById(postId)
+            post = handlePost(post)
+                ?: throw IllegalArgumentException("Post not found")
+            emit(Result.Success(post))
+        } catch (e: Exception) {
+            emit(Result.Error(e))
+        }
     }
 
     suspend fun create(post: Post): Flow<Result<Unit>> = flow {
         emit(Result.Loading)
-        postRemoteDataSource.create(post)
-            .catch { throwable ->
-                emit(Result.Error(Exception(throwable.message)))
-            }
-            .collect {
-                inMemoryPost.add(post)
-                emit(Result.Success(Unit))
-            }
+        try {
+            postRemoteDataSource.create(post)
+            inMemoryPost.add(post)
+            emit(Result.Success(Unit))
+        } catch (e: Exception) {
+            emit(Result.Error(e))
+        }
     }
 
     suspend fun update(post: Post): Flow<Result<Unit>> = flow {
         emit(Result.Loading)
-        postRemoteDataSource.update(post)
-            .catch { throwable ->
-                emit(Result.Error(Exception(throwable.message)))
-            }
-            .collect {
-                inMemoryPost.updatePost(post)
-                emit(Result.Success(Unit))
-            }
+        try {
+            postRemoteDataSource.update(post)
+            inMemoryPost.updatePost(post)
+            emit(Result.Success(Unit))
+        } catch (e: Exception) {
+            emit(Result.Error(e))
+        }
     }
 
     suspend fun delete(postId: String): Flow<Result<Unit>> = flow {
         emit(Result.Loading)
-        postRemoteDataSource.delete(postId)
-            .catch { throwable ->
-                emit(Result.Error(Exception(throwable.message)))
-            }
-            .collect {
-                inMemoryPost.delete(postId)
-                emit(Result.Success(Unit))
-            }
+        try {
+            postRemoteDataSource.delete(postId)
+            inMemoryPost.delete(postId)
+            emit(Result.Success(Unit))
+        } catch (e: Exception) {
+            emit(Result.Error(e))
+        }
     }
 
     suspend fun toggleLove(postId: String): Flow<Result<Unit>> = flow {
         emit(Result.Loading)
 
-        var postLovers = mutableMapOf<String, Long>()
-        postRemoteDataSource.getById(postId).collect {
-            if (it == null) throw IllegalArgumentException("Post not found")
-            postLovers = it.lovers
+        try {
+            val post = postRemoteDataSource.getById(postId)
+                ?: throw IllegalArgumentException("Post not found")
+            val isUserCurrentlyLovePost = post.lovers.containsKey(Preferences.userId)
+            postRemoteDataSource.toggleLove(postId, isUserCurrentlyLovePost)
+
+            inMemoryPost.togglePostLove(postId, isUserCurrentlyLovePost)
+            emit(Result.Success(Unit))
+            if (isUserCurrentlyLovePost) return@flow
+        } catch (e: Exception) {
+            emit(Result.Error(e))
         }
 
-        val hasLove = postLovers.containsKey(Preferences.userId)
-        postRemoteDataSource.toggleLove(postId, hasLove)
-            .catch { throwable ->
-                emit(Result.Error(Exception(throwable.message)))
-            }
-            .collect {
-                inMemoryPost.togglePostLove(postId, hasLove)
-                emit(Result.Success(Unit))
-            }
+        val notification = NotificationBuilder.build(
+            postId,
+            NotificationData.EVENT_POST_LIKE
+        ) ?: return@flow
+
+        try {
+            notificationAPI.send(notification)
+        } catch (e: Exception) {
+            Log.e("PostRepository", "toggleLove: ${e.message}", e)
+        }
     }
 }

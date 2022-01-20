@@ -9,4 +9,5 @@ data class User(
     var profilePictureUrl: String = "",
     var createdAt: Long = 0L,
     var updatedAt: Long? = null,
+    var FCMToken: String? = null,
 )

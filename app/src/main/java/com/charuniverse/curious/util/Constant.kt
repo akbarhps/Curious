@@ -6,6 +6,8 @@ object Constant {
 
     const val GOOGLE_OAUTH_KEY = BuildConfig.GOOGLE_OAUTH_KEY
 
+    const val FCM_BASE_URL = "https://fcm.googleapis.com"
+
     const val MINUTE_IN_SECONDS = 60
     const val HOUR_IN_SECONDS = MINUTE_IN_SECONDS * 60
     const val DAY_IN_SECONDS = HOUR_IN_SECONDS * 24
