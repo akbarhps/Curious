@@ -1,6 +1,5 @@
 package com.charuniverse.curious.data.source
 
-import android.util.Log
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.dto.PostDetail
 import com.charuniverse.curious.data.model.Post
@@ -34,12 +33,14 @@ class PostRepository(
     }
 
     private suspend fun handlePost(post: PostDetail?): PostDetail? = post?.let {
+        val viewerUID = Preferences.userId
         it.author = getUserById(it.createdBy)
-        it.comments?.map { (_, comment) ->
+        it.comments.map { (_, comment) ->
             comment.author = getUserById(comment.createdBy)
+            comment.isViewerLoved = comment.lovers.containsKey(viewerUID)
         }
 
-        it.isViewerLoved = it.lovers?.containsKey(Preferences.userId) ?: false
+        it.isViewerLoved = it.lovers.containsKey(viewerUID)
         inMemoryPost.add(it)
         return@let it
     }
@@ -169,13 +170,13 @@ class PostRepository(
             postLovers = it.lovers
         }
 
-        val hasLike = postLovers.containsKey(Preferences.userId)
-        postRemoteDataSource.toggleLove(postId, hasLike)
+        val hasLove = postLovers.containsKey(Preferences.userId)
+        postRemoteDataSource.toggleLove(postId, hasLove)
             .catch { throwable ->
                 emit(Result.Error(Exception(throwable.message)))
             }
             .collect {
-                inMemoryPost.updatePostLike(postId, hasLike)
+                inMemoryPost.togglePostLove(postId, hasLove)
                 emit(Result.Success(Unit))
             }
     }

@@ -11,6 +11,9 @@ data class CommentDetail(
     var createdBy: String = "",
     var createdAt: Long = 0L,
     var updatedAt: Long? = null,
+    var loveCount: Long = 0L,
+    var lovers: MutableMap<String, Long> = mutableMapOf(),
+    var isViewerLoved: Boolean = false,
     var author: User? = null,
 ) {
     fun toCommentEntity(): Comment = Comment(

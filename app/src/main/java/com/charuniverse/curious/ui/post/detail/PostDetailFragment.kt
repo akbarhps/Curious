@@ -2,7 +2,6 @@ package com.charuniverse.curious.ui.post.detail
 
 import android.os.Bundle
 import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
@@ -19,22 +18,27 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
 
+    private val MENU_CREATE_COMMENT = 0
+    private val MENU_EDIT_POST = 1
+    private val MENU_DELETE_POST = 2
+
     private val viewModel: PostDetailViewModel by viewModels()
 
     private val args: PostDetailFragmentArgs by navArgs()
 
     private lateinit var binding: FragmentPostDetailBinding
 
+    private var isViewerAuthor: Boolean? = null
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setHasOptionsMenu(true)
 
         viewModel.setPostId(args.postId)
         binding = FragmentPostDetailBinding.bind(view).also {
             it.viewModel = viewModel
-            it.lifecycleOwner = this
-            it.commentsList.adapter = PostCommentsAdapter(viewModel)
-
-            it.fabOpenCreateComment.setOnClickListener {
+            it.commentList.adapter = PostCommentsAdapter(viewModel)
+            it.ivOpenCommentFragment.setOnClickListener {
                 openCreateEditCommentFragment()
             }
         }
@@ -51,14 +55,13 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
             }
 
             state.post?.let { post ->
-                setHasOptionsMenu(post.createdBy == Preferences.userId)
                 binding.post = post
-
-                (binding.commentsList.adapter as PostCommentsAdapter).let { adapter ->
+                (binding.commentList.adapter as PostCommentsAdapter).let { adapter ->
                     adapter.submitList(post.comments.values.sortedBy { it.createdAt })
                     // TODO: find better way to refresh
                     adapter.notifyDataSetChanged()
                 }
+                isViewerAuthor = post.createdBy == Preferences.userId
             }
 
             state.selectedUserId?.let {
@@ -75,17 +78,37 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
         })
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.menu_post_detail, menu)
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        menu.clear()
+        if (isViewerAuthor != null) {
+            menu.add(0, MENU_CREATE_COMMENT, Menu.NONE, "Comment this post")
+                .setIcon(R.drawable.ic_baseline_add_comment_24)
+                .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+
+            if (isViewerAuthor!!) {
+                menu.add(0, MENU_EDIT_POST, Menu.NONE, "Edit Post")
+                    .setIcon(R.drawable.ic_baseline_edit_24)
+                    .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
+
+                menu.add(0, MENU_DELETE_POST, Menu.NONE, "Delete Post")
+                    .setIcon(R.drawable.ic_baseline_delete_24)
+                    .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)
+            }
+        }
+        super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.postCreateEditFragment -> {
+            MENU_CREATE_COMMENT -> {
+                openCreateEditCommentFragment()
+                true
+            }
+            MENU_EDIT_POST -> {
                 openEditFragment()
                 true
             }
-            R.id.delete_post -> {
+            MENU_DELETE_POST -> {
                 viewModel.deletePost()
                 true
             }
@@ -114,5 +137,4 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
         super.onResume()
         viewModel.refreshPost(false)
     }
-
 }

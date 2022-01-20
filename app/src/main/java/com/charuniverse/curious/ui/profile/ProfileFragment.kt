@@ -1,7 +1,6 @@
 package com.charuniverse.curious.ui.profile
 
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -28,7 +27,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     ): View {
         return FragmentProfileBinding.inflate(inflater).let {
             binding = it
-            it.lifecycleOwner = this
             return@let it.root
         }
     }
@@ -39,7 +37,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         viewModel.setUserId(args.userId ?: Preferences.userId)
 
         binding.let {
-            it.postsList.adapter = UserPostAdapter(viewModel)
+            it.postList.adapter = UserPostAdapter(viewModel)
             it.swipeLayout.setOnRefreshListener {
                 viewModel.refreshUser(true, true)
             }
@@ -65,7 +63,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             }
 
             state.userPosts?.let { posts ->
-                (binding.postsList.adapter as UserPostAdapter).let {
+                (binding.postList.adapter as UserPostAdapter).let {
                     it.submitList(posts)
                     // TODO: find better way to refresh data
                     it.notifyDataSetChanged()
@@ -84,11 +82,17 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.profile_log_out -> viewModel.logOut(requireContext())
-            R.id.profileEditFragment -> openProfileEditFragment()
+        return when (item.itemId) {
+            R.id.profile_log_out -> {
+                viewModel.logOut(requireContext())
+                true
+            }
+            R.id.profileEditFragment -> {
+                openProfileEditFragment()
+                true
+            }
+            else -> false
         }
-        return true
     }
 
     private fun openPostDetailFragment(postId: String) {

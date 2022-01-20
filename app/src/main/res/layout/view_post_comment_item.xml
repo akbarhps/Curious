@@ -6,7 +6,15 @@
 
         <import type="android.view.View" />
 
+        <import type="com.charuniverse.curious.R" />
+
+        <import type="com.charuniverse.curious.ui.post.detail.PostDetailViewModel" />
+
         <import type="com.charuniverse.curious.data.dto.CommentDetail" />
+
+        <variable
+            name="viewModel"
+            type="PostDetailViewModel" />
 
         <variable
             name="comment"
@@ -17,62 +25,129 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="32dp"
-            android:gravity="end"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
 
             <ImageView
                 android:id="@+id/imageView"
                 android:layout_width="32dp"
                 android:layout_height="match_parent"
+                android:background="?selectableItemBackgroundBorderless"
+                app:layout_constraintStart_toStartOf="parent"
                 app:loadCircular="@{comment.author.profilePictureUrl}" />
 
             <TextView
-                android:layout_width="0dp"
+                android:id="@+id/textView6"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
                 android:layout_weight="1"
                 android:ellipsize="end"
-                android:gravity="center|start"
+                android:gravity="center"
                 android:maxLines="1"
-                android:text="@{comment.author.username}" />
+                android:text="@{comment.author.username}"
+                app:layout_constraintStart_toEndOf="@+id/imageView" />
 
             <ImageView
-                android:id="@+id/imageView2"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="center"
+                android:layout_width="16dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
                 android:src="@drawable/ic_baseline_verified_24"
-                android:visibility="@{comment.author.verified ? View.VISIBLE : View.GONE}" />
+                android:tooltipText="Verified User"
+                android:visibility="@{comment.author.verified ? View.VISIBLE : View.GONE}"
+                app:layout_constraintStart_toEndOf="@+id/textView6" />
 
             <TextView
                 android:id="@+id/textView3"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_marginEnd="4dp"
-                android:gravity="center"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:gravity="center|end"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:timestamp="@{comment.createdAt}" />
 
-            <ImageView
-                android:id="@+id/iv_open_comment_menu"
-                android:layout_width="24dp"
-                android:layout_height="match_parent"
-                android:background="?selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_baseline_more_vert_24" />
-
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:textIsSelectable="true"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textSize="14sp"
             app:renderMarkdown="@{comment.content}" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="24dp"
+            android:layout_marginTop="12dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="8dp"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toStartOf="@+id/iv_open_comment_menu"
+                app:layout_constraintStart_toStartOf="parent">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:onClick="@{() -> viewModel.toggleCommentLove(comment.id)}"
+                    app:load="@{comment.viewerLoved ? R.drawable.ic_baseline_favorite_24 : R.drawable.ic_baseline_favorite_border_24}" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="12dp"
+                    android:gravity="center"
+                    android:text="@{``+comment.loveCount}" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="32dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_baseline_comment_24"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="12dp"
+                    android:gravity="center"
+                    android:text="@{``+0}"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/iv_open_comment_menu"
+                android:layout_width="24dp"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_baseline_more_vert_24"
+                android:tooltipText="More option"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="12dp"
+            android:background="#C8C8C8" />
 
     </LinearLayout>
 

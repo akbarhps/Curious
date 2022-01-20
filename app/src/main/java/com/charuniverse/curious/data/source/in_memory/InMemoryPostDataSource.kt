@@ -1,6 +1,5 @@
 package com.charuniverse.curious.data.source.in_memory
 
-import android.util.Log
 import com.charuniverse.curious.data.dto.CommentDetail
 import com.charuniverse.curious.data.dto.PostDetail
 import com.charuniverse.curious.data.model.Comment
@@ -43,7 +42,7 @@ object InMemoryPostDataSource {
         it.updatedAt = post.updatedAt
     }
 
-    fun updatePostLike(postId: String, hasLike: Boolean) = posts[postId]?.let {
+    fun togglePostLove(postId: String, hasLike: Boolean) = posts[postId]?.let {
         val uid = Preferences.userId
         if (!hasLike) {
             it.lovers[uid] = System.currentTimeMillis()
@@ -60,6 +59,23 @@ object InMemoryPostDataSource {
         cacheComment.content = comment.content
         cacheComment.updatedAt = comment.updatedAt
     }
+
+    fun togglePostCommentLove(postId: String, commentId: String, hasLove: Boolean) =
+        posts[postId]?.let {
+            val uid = Preferences.userId
+            val comment = it.comments[commentId] ?: return@let
+
+            if (!hasLove) {
+                comment.lovers[uid] = System.currentTimeMillis()
+                comment.loveCount++
+            } else {
+                comment.lovers.remove(uid)
+                comment.loveCount--
+            }
+
+            comment.isViewerLoved = !hasLove
+            it.comments[commentId] = comment
+        }
 
     fun deletePostComment(postId: String, commentId: String) = posts[postId]?.let {
         if (it.comments.containsKey(commentId)) {

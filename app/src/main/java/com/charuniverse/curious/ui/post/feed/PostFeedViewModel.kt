@@ -20,7 +20,6 @@ class PostFeedViewModel @Inject constructor(
 
     companion object {
         private const val TAG = "PostViewModel"
-        private var isFirstLoad = true
     }
 
     private val _viewState = MutableLiveData<Event<PostFeedViewState>>()
@@ -43,10 +42,7 @@ class PostFeedViewModel @Inject constructor(
     }
 
     init {
-        refreshPosts(isFirstLoad)
-        if (isFirstLoad) {
-            isFirstLoad = false
-        }
+        refreshPosts()
     }
 
     fun refreshPosts(forceRefresh: Boolean = false) = viewModelScope.launch {

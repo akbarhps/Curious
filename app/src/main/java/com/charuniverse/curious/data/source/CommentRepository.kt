@@ -1,9 +1,11 @@
 package com.charuniverse.curious.data.source
 
+import android.util.Log
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.model.Comment
 import com.charuniverse.curious.data.source.in_memory.InMemoryPostDataSource
 import com.charuniverse.curious.data.source.remote.CommentRemoteDataSource
+import com.charuniverse.curious.util.Preferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
@@ -57,4 +59,23 @@ class CommentRepository(
         }
     }
 
+    suspend fun toggleLove(postId: String, commentId: String): Flow<Result<Unit>> = flow {
+        emit(Result.Loading)
+
+        commentRemoteDataSource.getById(postId, commentId)
+            .catch { throwable -> emit(Result.Error(Exception(throwable.message))) }
+            .collect {
+                if (it == null) {
+                    emit(Result.Error(Exception("Comment not found")))
+                } else {
+                    val hasLove = it.lovers.containsKey(Preferences.userId)
+                    commentRemoteDataSource.toggleLove(postId, commentId, hasLove)
+                        .catch { throwable -> emit(Result.Error(Exception(throwable.message))) }
+                        .collect {
+                            inMemoryPost.togglePostCommentLove(postId, commentId, hasLove)
+                            emit(Result.Success(Unit))
+                        }
+                }
+            }
+    }
 }

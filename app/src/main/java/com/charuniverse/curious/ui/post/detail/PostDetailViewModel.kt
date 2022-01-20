@@ -80,8 +80,14 @@ class PostDetailViewModel @Inject constructor(
         updateState(selectedCommentId = commentId)
     }
 
-    fun toggleLove() = viewModelScope.launch {
+    fun togglePostLove() = viewModelScope.launch {
         postRepository.toggleLove(currentPostId).collect {
+            handleResult(it) { refreshPost(false) }
+        }
+    }
+
+    fun toggleCommentLove(commentId: String) = viewModelScope.launch {
+        commentRepository.toggleLove(currentPostId, commentId).collect {
             handleResult(it) { refreshPost(false) }
         }
     }

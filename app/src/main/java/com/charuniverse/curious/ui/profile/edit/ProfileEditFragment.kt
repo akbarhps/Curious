@@ -59,7 +59,8 @@ class ProfileEditFragment : Fragment() {
                 username = binding.etUserUsername.text.toString(),
                 displayName = binding.etUserDisplayName.text.toString(),
             )
+            return true
         }
-        return true
+        return false
     }
 }

@@ -1,6 +1,7 @@
 package com.charuniverse.curious.ui.comment
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -32,7 +33,7 @@ class CommentCreateEditFragment : Fragment(R.layout.fragment_comment_create_edit
         setHasOptionsMenu(true)
         return FragmentCommentCreateEditBinding.inflate(inflater).let {
             binding = it
-            it.lifecycleOwner = this
+            binding.viewModel = viewModel
             return@let it.root
         }
     }
@@ -98,6 +99,7 @@ class CommentCreateEditFragment : Fragment(R.layout.fragment_comment_create_edit
     }
 
     private fun openMarkdownPreviewFragment() {
+        Log.i("VMMain", "openMarkdownPreviewFragment: ${viewModel.commentContent.value!!}")
         val dest = CommentCreateEditFragmentDirections
             .actionCommentCreateEditFragmentToMarkdownPreviewFragment(
                 binding.tvPostTitle.text.toString(),

@@ -57,7 +57,7 @@ class ProfileViewModel @Inject constructor(
 
     fun setUserId(userId: String) {
         currentUserId = userId
-        refreshUser(true, true)
+        refreshUser()
     }
 
     fun refreshUser(

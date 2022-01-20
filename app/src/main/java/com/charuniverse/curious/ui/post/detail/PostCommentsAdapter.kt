@@ -37,27 +37,23 @@ class PostCommentsAdapter(private val viewModel: PostDetailViewModel) :
 
         fun bind(viewModel: PostDetailViewModel, comment: CommentDetail) = binding.apply {
             this.comment = comment
+            this.viewModel = viewModel
 
-            binding.ivOpenCommentMenu.visibility = if (comment.createdBy == Preferences.userId) {
-                View.VISIBLE
-            } else {
-                View.GONE
-            }
+            ivOpenCommentMenu.apply {
+                visibility = if (comment.createdBy == Preferences.userId) View.VISIBLE else View.GONE
 
-            ivOpenCommentMenu.setOnClickListener {
-                val menu = PopupMenu(it.context, it)
-
-                menu.menuInflater.inflate(R.menu.menu_edit_delete, menu.menu)
-
-                menu.setOnMenuItemClickListener { item ->
-                    when (item.itemId) {
-                        R.id.edit_item -> viewModel.setSelectedCommentId(comment.id)
-                        R.id.delete_item -> viewModel.deleteComment(comment.id)
+                setOnClickListener {
+                    val menu = PopupMenu(it.context, it)
+                    menu.menuInflater.inflate(R.menu.menu_edit_delete, menu.menu)
+                    menu.setOnMenuItemClickListener { item ->
+                        when (item.itemId) {
+                            R.id.edit_item -> viewModel.setSelectedCommentId(comment.id)
+                            R.id.delete_item -> viewModel.deleteComment(comment.id)
+                        }
+                        true
                     }
-                    true
+                    menu.show()
                 }
-
-                menu.show()
             }
 
             executePendingBindings()

@@ -78,7 +78,7 @@
     <fragment
         android:id="@+id/commentCreateEditFragment"
         android:name="com.charuniverse.curious.ui.comment.CommentCreateEditFragment"
-        android:label="Send Comment">
+        android:label="Post Comment">
         <argument
             android:name="postId"
             app:argType="string" />

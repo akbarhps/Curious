@@ -22,9 +22,8 @@ class PostFeedFragment : Fragment(R.layout.fragment_post_feed) {
         super.onViewCreated(view, savedInstanceState)
 
         binding = FragmentPostFeedBinding.bind(view).also {
-            it.lifecycleOwner = this
             it.viewModel = viewModel
-            it.postsList.adapter = PostFeedAdapter(viewModel)
+            it.postList.adapter = PostFeedAdapter(viewModel)
         }
 
         setupEventObserver()
@@ -35,7 +34,7 @@ class PostFeedFragment : Fragment(R.layout.fragment_post_feed) {
             binding.swipeLayout.isRefreshing = state.isLoading
 
             state.posts?.let { posts ->
-                (binding.postsList.adapter as PostFeedAdapter).let {
+                (binding.postList.adapter as PostFeedAdapter).let {
                     it.submitList(posts)
                     // TODO: find another way to refresh the data
                     it.notifyDataSetChanged()
