@@ -13,7 +13,7 @@ object NotificationBuilder {
     fun build(postId: String, event: String, body: String? = null): Notification? {
         val post = inMemoryPost.getById(postId) ?: return null
         val user = inMemoryUser.getById(post.createdBy) ?: return null
-        if (user.FCMToken == null) return null
+        if (user.id == Preferences.userId || user.FCMToken == null) return null
 
         val notificationData = NotificationData(
             id = post.id,
