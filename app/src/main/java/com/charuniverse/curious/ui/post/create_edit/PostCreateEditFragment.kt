@@ -34,6 +34,7 @@ class PostCreateEditFragment : Fragment(R.layout.fragment_post_create_edit),
         return FragmentPostCreateEditBinding.inflate(inflater).let {
             binding = it
             it.viewModel = viewModel
+            it.lifecycleOwner = this
             return@let it.root
         }
     }
@@ -106,7 +107,8 @@ class PostCreateEditFragment : Fragment(R.layout.fragment_post_create_edit),
     private fun openMarkdownPreview() {
         val dest = PostCreateEditFragmentDirections
             .actionPostCreateEditFragmentToMarkdownPreviewFragment(
-                binding.title.text.toString(), binding.content.text.toString()
+                binding.title.text.toString(),
+                binding.content.text.toString()
             )
         findNavController().navigate(dest)
     }

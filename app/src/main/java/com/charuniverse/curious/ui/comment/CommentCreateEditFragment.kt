@@ -33,7 +33,8 @@ class CommentCreateEditFragment : Fragment(R.layout.fragment_comment_create_edit
         setHasOptionsMenu(true)
         return FragmentCommentCreateEditBinding.inflate(inflater).let {
             binding = it
-            binding.viewModel = viewModel
+            it.lifecycleOwner = this
+            it.viewModel = viewModel
             return@let it.root
         }
     }
@@ -71,6 +72,7 @@ class CommentCreateEditFragment : Fragment(R.layout.fragment_comment_create_edit
             }
 
             if (state.isFinished) {
+                Log.i("MainViewModel", "setupEventObserver: selesai dan close")
                 findNavController().navigateUp()
             }
         })
@@ -99,7 +101,6 @@ class CommentCreateEditFragment : Fragment(R.layout.fragment_comment_create_edit
     }
 
     private fun openMarkdownPreviewFragment() {
-        Log.i("VMMain", "openMarkdownPreviewFragment: ${viewModel.commentContent.value!!}")
         val dest = CommentCreateEditFragmentDirections
             .actionCommentCreateEditFragmentToMarkdownPreviewFragment(
                 binding.tvPostTitle.text.toString(),

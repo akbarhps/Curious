@@ -27,11 +27,12 @@ class CommentRepository(
 
             emit(Result.Success(Unit))
 
+            // TODO: maybe this should be in different call so we can ignore the result
             val notification = NotificationBuilder.build(
                 comment.postId,
                 NotificationData.EVENT_POST_COMMENT,
                 comment.content,
-            ) ?: return@flow emit(Result.Success(Unit))
+            ) ?: return@flow
 
             notificationAPI.send(notification)
         } catch (e: Exception) {
@@ -70,9 +71,10 @@ class CommentRepository(
         commentId: String,
         forceRefresh: Boolean = false
     ): Flow<Result<Comment>> = flow {
-        if (!forceRefresh) {
-            return@flow
-        }
+        //TODO: Implement force refresh
+//        if (!forceRefresh) {
+//            return@flow
+//        }
 
         emit(Result.Loading)
         val post = inMemoryPost.getById(postId)

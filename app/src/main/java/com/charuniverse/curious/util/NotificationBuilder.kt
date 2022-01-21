@@ -12,13 +12,14 @@ object NotificationBuilder {
 
     fun build(postId: String, event: String, body: String? = null): Notification? {
         val post = inMemoryPost.getById(postId) ?: return null
-        val user = inMemoryUser.getById(post.createdBy) ?: return null
-        if (user.id == Preferences.userId || user.FCMToken == null) return null
+        val receiver = inMemoryUser.getById(post.createdBy) ?: return null
+        val sender = inMemoryUser.getById(Preferences.userId) ?: return null
+        if (receiver.id == Preferences.userId || receiver.FCMToken == null) return null
 
         val notificationData = NotificationData(
             id = post.id,
             title = post.title,
-            createdBy = user.username,
+            createdBy = sender.username,
             event = event,
         )
 
@@ -30,6 +31,6 @@ object NotificationBuilder {
             else -> return null
         }
 
-        return Notification(data = notificationData, to = user.FCMToken!!)
+        return Notification(data = notificationData, to = receiver.FCMToken!!)
     }
 }
