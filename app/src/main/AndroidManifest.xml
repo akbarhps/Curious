@@ -3,11 +3,11 @@
     package="com.charuniverse.curious">
 
     <application
-        android:allowBackup="true"
         android:name=".CuriousApplication"
-        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="true"
+        android:icon="@drawable/img_curiousity"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/img_curiousity"
         android:supportsRtl="true"
         android:theme="@style/Theme.Curious">
 
