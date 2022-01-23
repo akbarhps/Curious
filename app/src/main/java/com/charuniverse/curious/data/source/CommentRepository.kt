@@ -3,7 +3,7 @@ package com.charuniverse.curious.data.source
 import android.util.Log
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.model.Comment
-import com.charuniverse.curious.data.model.NotificationEvent
+import com.charuniverse.curious.util.NotificationEvent
 import com.charuniverse.curious.data.source.in_memory.InMemoryPostDataSource
 import com.charuniverse.curious.data.source.remote.CommentRemoteDataSource
 import com.charuniverse.curious.data.source.remote.NotificationRemoteDataSource

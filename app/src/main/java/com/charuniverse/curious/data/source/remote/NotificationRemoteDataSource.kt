@@ -12,15 +12,15 @@ class NotificationRemoteDataSource(
     private val notificationAPI: PushNotificationAPI,
 ) {
 
-    private val userRef = firebaseDatabase.reference.child("users")
+    private val notificationRef = firebaseDatabase.reference.child("notifications")
 
     suspend fun getFCMToken(): String {
         return firebaseMessaging.token.await()
     }
 
     suspend fun create(data: Notification) {
-        val notificationRef = userRef
-            .child("${data.recipient}/notifications/${data.id}")
+        val notificationRef = notificationRef
+            .child("${data.recipient}/${data.id}")
 
         val push = NotificationBuilder
             .pushNotification(eventId = data.eventId, eventType = data.eventType)
@@ -31,6 +31,15 @@ class NotificationRemoteDataSource(
             .await()
 
         notificationAPI.send(push)
+    }
+
+    suspend fun getByUserId(userId: String): List<Notification> {
+        return notificationRef
+            .child(userId)
+            .get()
+            .await()
+            .children
+            .map { it.getValue(Notification::class.java)!! }
     }
 
 }

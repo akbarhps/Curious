@@ -1,4 +1,4 @@
-package com.charuniverse.curious.data.model
+package com.charuniverse.curious.util
 
 import com.charuniverse.curious.R
 
@@ -14,8 +14,8 @@ object NotificationEvent {
     }
 
     fun getEventValue(event: String): String = when (event) {
-        POST_LOVE -> "loved your post"
-        POST_COMMENT -> "comment on your post"
+        POST_LOVE -> "Loved your post"
+        POST_COMMENT -> "Commented on your post"
         else -> ""
     }
 

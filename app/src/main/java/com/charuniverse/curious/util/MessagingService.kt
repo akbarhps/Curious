@@ -9,8 +9,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.NavDeepLinkBuilder
 import com.charuniverse.curious.R
-import com.charuniverse.curious.data.model.NotificationEvent
-import com.charuniverse.curious.data.model.PushNotificationData
+import com.charuniverse.curious.data.dto.PushNotificationData
 import com.charuniverse.curious.ui.MainActivity
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.messaging.FirebaseMessagingService

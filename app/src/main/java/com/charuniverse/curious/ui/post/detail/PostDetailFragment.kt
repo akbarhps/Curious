@@ -43,6 +43,18 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
             }
         }
 
+        // TODO: Refactor
+        viewModel.post.observe(viewLifecycleOwner, { post ->
+            binding.post = post
+            isViewerAuthor = post.createdBy == Preferences.userId
+
+            (binding.commentList.adapter as PostCommentsAdapter).let { adapter ->
+                adapter.submitList(post.comments.values.sortedBy { it.createdAt })
+                // TODO: find better way to refresh
+                adapter.notifyDataSetChanged()
+            }
+        })
+
         setupEventObserver()
     }
 
@@ -52,16 +64,6 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
 
             state.error?.let {
                 Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_SHORT).show()
-            }
-
-            state.post?.let { post ->
-                binding.post = post
-                (binding.commentList.adapter as PostCommentsAdapter).let { adapter ->
-                    adapter.submitList(post.comments.values.sortedBy { it.createdAt })
-                    // TODO: find better way to refresh
-                    adapter.notifyDataSetChanged()
-                }
-                isViewerAuthor = post.createdBy == Preferences.userId
             }
 
             state.selectedUserId?.let {

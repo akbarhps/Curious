@@ -29,18 +29,19 @@ class PostFeedViewModel @Inject constructor(
     private fun updateState(
         isLoading: Boolean = false,
         error: Exception? = null,
-        posts: List<PostDetail>? = null,
         selectedPostId: String? = null,
     ) {
         _viewState.value = Event(
             PostFeedViewState(
                 isLoading = isLoading,
                 error = error,
-                posts = posts,
                 selectedPostId = selectedPostId,
             )
         )
     }
+
+    private val _posts = MutableLiveData<List<PostDetail>>()
+    val posts: LiveData<List<PostDetail>> = _posts
 
     init {
         refreshPosts(isFirstLoad)
@@ -54,7 +55,8 @@ class PostFeedViewModel @Inject constructor(
     fun refreshPosts(forceRefresh: Boolean = false) = viewModelScope.launch {
         postRepository.observePosts(forceRefresh = forceRefresh).collect { res ->
             handleResult(res) { posts ->
-                updateState(posts = posts.sortedByDescending { it.createdAt })
+                updateState(isLoading = false)
+                _posts.value = posts.sortedByDescending { it.createdAt }
             }
         }
     }

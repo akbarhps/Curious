@@ -58,6 +58,9 @@
         <action
             android:id="@+id/action_postFeedFragment_to_postDetailFragment"
             app:destination="@id/postDetailFragment" />
+        <action
+            android:id="@+id/action_postFeedFragment_to_postCreateEditFragment"
+            app:destination="@id/postCreateEditFragment" />
     </fragment>
 
     <fragment
@@ -111,4 +114,12 @@
         android:id="@+id/profileEditFragment"
         android:name="com.charuniverse.curious.ui.profile.edit.ProfileEditFragment"
         android:label="Edit Profile" /><action android:id="@+id/action_global_profileFragment" app:destination="@id/profileFragment"/>
+    <fragment
+        android:id="@+id/notificationFragment"
+        android:name="com.charuniverse.curious.ui.notification.NotificationFragment"
+        android:label="Notifications">
+        <action
+            android:id="@+id/action_notificationFragment_to_postDetailFragment"
+            app:destination="@id/postDetailFragment" />
+    </fragment>
 </navigation>

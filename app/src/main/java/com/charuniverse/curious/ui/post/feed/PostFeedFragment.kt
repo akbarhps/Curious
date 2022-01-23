@@ -26,20 +26,26 @@ class PostFeedFragment : Fragment(R.layout.fragment_post_feed) {
             it.postList.adapter = PostFeedAdapter(viewModel)
         }
 
+        binding.fabCreatePost.setOnClickListener {
+            val dest = PostFeedFragmentDirections.actionPostFeedFragmentToPostCreateEditFragment()
+            findNavController().navigate(dest)
+        }
+
+        // TODO: Refactor
+        viewModel.posts.observe(viewLifecycleOwner, { posts ->
+            (binding.postList.adapter as PostFeedAdapter).let {
+                it.submitList(posts)
+                // TODO: find another way to refresh the data
+                it.notifyDataSetChanged()
+            }
+        })
+
         setupEventObserver()
     }
 
     private fun setupEventObserver() {
         viewModel.viewState.observe(viewLifecycleOwner, EventObserver { state ->
             binding.swipeLayout.isRefreshing = state.isLoading
-
-            state.posts?.let { posts ->
-                (binding.postList.adapter as PostFeedAdapter).let {
-                    it.submitList(posts)
-                    // TODO: find another way to refresh the data
-                    it.notifyDataSetChanged()
-                }
-            }
 
             state.selectedPostId?.let {
                 val dest = PostFeedFragmentDirections
@@ -51,10 +57,5 @@ class PostFeedFragment : Fragment(R.layout.fragment_post_feed) {
                 Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
             }
         })
-    }
-
-    override fun onResume() {
-        super.onResume()
-        viewModel.refreshPosts(false)
     }
 }

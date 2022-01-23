@@ -1,5 +1,6 @@
-package com.charuniverse.curious.data.model
+package com.charuniverse.curious.data.dto
 
+import com.charuniverse.curious.util.NotificationEvent
 import com.google.gson.annotations.SerializedName
 
 data class PushNotificationData(

@@ -34,7 +34,6 @@ class PostDetailViewModel @Inject constructor(
         isLoading: Boolean = false,
         isFinished: Boolean = false,
         error: Exception? = null,
-        post: PostDetail? = null,
         selectedUserId: String? = null,
         selectedCommentId: String? = null,
     ) {
@@ -43,12 +42,14 @@ class PostDetailViewModel @Inject constructor(
                 isLoading = isLoading,
                 isFinished = isFinished,
                 error = error,
-                post = post,
                 selectedUserId = selectedUserId,
                 selectedCommentId = selectedCommentId,
             )
         )
     }
+
+    private val _post = MutableLiveData<PostDetail>()
+    val post: LiveData<PostDetail> = _post
 
     private lateinit var currentPostId: String
 
@@ -67,8 +68,11 @@ class PostDetailViewModel @Inject constructor(
     }
 
     fun refreshPost(forceRefresh: Boolean = false) = viewModelScope.launch {
-        postRepository.observePost(currentPostId, forceRefresh).collect {
-            handleResult(it) { post -> updateState(post = post) }
+        postRepository.observePost(currentPostId, forceRefresh).collect { res ->
+            handleResult(res) {
+                updateState(isLoading = false)
+                _post.value = it
+            }
         }
     }
 

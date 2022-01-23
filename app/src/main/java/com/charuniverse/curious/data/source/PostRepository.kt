@@ -3,7 +3,6 @@ package com.charuniverse.curious.data.source
 import android.util.Log
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.dto.PostDetail
-import com.charuniverse.curious.data.model.NotificationEvent
 import com.charuniverse.curious.data.model.Post
 import com.charuniverse.curious.data.model.User
 import com.charuniverse.curious.data.source.in_memory.InMemoryPostDataSource
@@ -12,6 +11,7 @@ import com.charuniverse.curious.data.source.remote.NotificationRemoteDataSource
 import com.charuniverse.curious.data.source.remote.PostRemoteDataSource
 import com.charuniverse.curious.data.source.remote.UserRemoteDataSource
 import com.charuniverse.curious.util.NotificationBuilder
+import com.charuniverse.curious.util.NotificationEvent
 import com.charuniverse.curious.util.Preferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -173,13 +173,14 @@ class PostRepository(
     }
 
     suspend fun toggleLove(postId: String): Flow<Result<Unit>> = flow {
+        var isUserCurrentlyLovePost = true
         try {
             emit(Result.Loading)
 
             val post = postRemoteDataSource.getById(postId)
                 ?: throw IllegalArgumentException("Post not found")
 
-            val isUserCurrentlyLovePost = post.lovers.containsKey(Preferences.userId)
+            isUserCurrentlyLovePost = post.lovers.containsKey(Preferences.userId)
             postRemoteDataSource.toggleLove(postId, isUserCurrentlyLovePost)
             inMemoryPost.togglePostLove(postId, isUserCurrentlyLovePost)
 
@@ -188,7 +189,8 @@ class PostRepository(
             emit(Result.Error(e))
         }
 
-        sendNotification(postId)
+        if (!isUserCurrentlyLovePost)
+            sendNotification(postId)
     }
 
     private fun sendNotification(postId: String) = CoroutineScope(Dispatchers.IO).launch {
@@ -197,6 +199,8 @@ class PostRepository(
         val notification = NotificationBuilder
             .postNotification(postId, eventType)
             ?: return@launch
+
+        notification.id = "${postId}_${Preferences.userId}"
 
         try {
             notificationRemoteDataSource.create(notification)

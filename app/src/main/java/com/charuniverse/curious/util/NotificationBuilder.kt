@@ -1,8 +1,8 @@
 package com.charuniverse.curious.util
 
 import com.charuniverse.curious.data.model.Notification
-import com.charuniverse.curious.data.model.PushNotification
-import com.charuniverse.curious.data.model.PushNotificationData
+import com.charuniverse.curious.data.dto.PushNotification
+import com.charuniverse.curious.data.dto.PushNotificationData
 import com.charuniverse.curious.data.source.in_memory.InMemoryPostDataSource
 import com.charuniverse.curious.data.source.in_memory.InMemoryUserDataSource
 

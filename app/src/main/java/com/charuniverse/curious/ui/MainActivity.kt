@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity() {
     private val bottomNavFragments = setOf(
         R.id.postFeedFragment,
         R.id.profileFragment,
+        R.id.notificationFragment
     )
 
     private val hideToolbarOnFragment = setOf(

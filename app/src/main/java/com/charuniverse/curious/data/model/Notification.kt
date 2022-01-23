@@ -1,5 +1,6 @@
 package com.charuniverse.curious.data.model
 
+import com.charuniverse.curious.util.NotificationEvent
 import com.charuniverse.curious.util.Preferences
 import java.util.*
 

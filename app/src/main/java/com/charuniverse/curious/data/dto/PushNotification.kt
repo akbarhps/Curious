@@ -1,4 +1,4 @@
-package com.charuniverse.curious.data.model
+package com.charuniverse.curious.data.dto
 
 import com.google.gson.annotations.SerializedName
 
