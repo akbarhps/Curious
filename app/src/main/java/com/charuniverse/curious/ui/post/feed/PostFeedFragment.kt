@@ -58,4 +58,9 @@ class PostFeedFragment : Fragment(R.layout.fragment_post_feed) {
             }
         })
     }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.refreshPosts(false)
+    }
 }

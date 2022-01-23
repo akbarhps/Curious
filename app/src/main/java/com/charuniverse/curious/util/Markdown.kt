@@ -13,8 +13,8 @@ object Markdown {
         BULLET_LIST,
         NUMBERED_LIST,
         QUOTE,
-        LATEX_BLOCK,
         CODE_BLOCK,
+//        LATEX_BLOCK,
     }
 
     data class Element(
@@ -89,12 +89,12 @@ object Markdown {
             icon = R.drawable.ic_baseline_code_24,
             tooltipText = "Code Block",
         ),
-        Element(
-            tag = Tag.LATEX_BLOCK,
-            prefix = "$$$\n",
-            suffix = "\n$$$\n",
-            icon = R.drawable.ic_baseline_functions_24,
-            tooltipText = "Latex Block",
-        ),
+//        Element(
+//            tag = Tag.LATEX_BLOCK,
+//            prefix = "$$$\n",
+//            suffix = "\n$$$\n",
+//            icon = R.drawable.ic_baseline_functions_24,
+//            tooltipText = "Latex Block",
+//        ),
     )
 }
