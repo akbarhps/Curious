@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.source.AuthRepository
-import com.charuniverse.curious.data.source.NotificationRepository
 import com.charuniverse.curious.data.source.UserRepository
 import com.charuniverse.curious.util.Event
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -19,9 +18,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val userRepository: UserRepository,
     private val authRepository: AuthRepository,
-    private val notificationRepository: NotificationRepository,
 ) : ViewModel() {
 
     companion object {

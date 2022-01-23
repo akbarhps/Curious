@@ -1,7 +1,6 @@
 package com.charuniverse.curious.ui.comment
 
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -72,7 +71,6 @@ class CommentCreateEditFragment : Fragment(R.layout.fragment_comment_create_edit
             }
 
             if (state.isFinished) {
-                Log.i("MainViewModel", "setupEventObserver: selesai dan close")
                 findNavController().navigateUp()
             }
         })

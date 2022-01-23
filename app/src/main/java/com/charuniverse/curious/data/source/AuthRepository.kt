@@ -4,7 +4,7 @@ import android.content.Context
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.model.User
 import com.charuniverse.curious.data.source.in_memory.InMemoryUserDataSource
-import com.charuniverse.curious.data.source.remote.MessagingRemoteDataSource
+import com.charuniverse.curious.data.source.remote.NotificationRemoteDataSource
 import com.charuniverse.curious.data.source.remote.UserRemoteDataSource
 import com.charuniverse.curious.util.Constant
 import com.charuniverse.curious.util.Preferences
@@ -19,8 +19,8 @@ import kotlinx.coroutines.tasks.await
 
 class AuthRepository(
     private val firebaseAuth: FirebaseAuth,
-    private val messagingRemoteDataSource: MessagingRemoteDataSource,
     private val userRemoteDataSource: UserRemoteDataSource,
+    private val notificationRemoteDataSource: NotificationRemoteDataSource,
 ) {
 
     fun buildGoogleSignInClient(context: Context): GoogleSignInClient = GoogleSignIn.getClient(
@@ -35,7 +35,7 @@ class AuthRepository(
     fun getLoginUser(): User? = firebaseAuth.currentUser?.let {
         User(
             id = it.uid,
-            username = it.uid,
+            username = it.email ?: "",
             displayName = it.displayName ?: "",
             email = it.email ?: "",
             profilePictureUrl = it.photoUrl.toString(),
@@ -60,9 +60,7 @@ class AuthRepository(
                 userRemoteDataSource.create(user)
             }
 
-            val token = messagingRemoteDataSource.getToken()
-                ?: throw Exception("User token not found")
-
+            val token = notificationRemoteDataSource.getFCMToken()
             userRemoteDataSource.updateFCMToken(uid, token)
 
             Preferences.userId = uid

@@ -31,7 +31,7 @@
         android:name="com.charuniverse.curious.ui.post.create_edit.PostCreateEditFragment"
         android:label="Create Post">
         <argument
-            android:name="postId"
+            android:name="id"
             android:defaultValue="@null"
             app:argType="string"
             app:nullable="true" />
@@ -65,7 +65,7 @@
         android:name="com.charuniverse.curious.ui.post.detail.PostDetailFragment"
         android:label="">
         <argument
-            android:name="postId"
+            android:name="id"
             app:argType="string" />
         <action
             android:id="@+id/action_postDetailFragment_to_postCreateEditFragment"

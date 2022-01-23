@@ -2,7 +2,8 @@ package com.charuniverse.curious.di
 
 import com.charuniverse.curious.data.source.CommentRepository
 import com.charuniverse.curious.data.source.remote.CommentRemoteDataSource
-import com.charuniverse.curious.data.source.remote.NotificationAPI
+import com.charuniverse.curious.data.source.remote.NotificationRemoteDataSource
+import com.charuniverse.curious.data.source.remote.PushNotificationAPI
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,9 +18,9 @@ object CommentModule {
     @Provides
     fun provideCommentRepository(
         @AppModule.RemoteCommentDataSource commentRemoteDataSource: CommentRemoteDataSource,
-        notificationAPI: NotificationAPI,
+        @AppModule.RemoteNotificationDataSource notificationRemoteDataSource: NotificationRemoteDataSource,
     ): CommentRepository {
-        return CommentRepository(commentRemoteDataSource, notificationAPI)
+        return CommentRepository(commentRemoteDataSource, notificationRemoteDataSource)
     }
 
 }

@@ -30,7 +30,7 @@ class PostCreateEditFragment : Fragment(R.layout.fragment_post_create_edit),
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         setHasOptionsMenu(true)
-        requireActivity().title = if (args.postId != null) "Edit Post" else "Create Post"
+        requireActivity().title = if (args.id != null) "Edit Post" else "Create Post"
         return FragmentPostCreateEditBinding.inflate(inflater).let {
             binding = it
             it.viewModel = viewModel
@@ -41,7 +41,7 @@ class PostCreateEditFragment : Fragment(R.layout.fragment_post_create_edit),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.setPostId(args.postId)
+        viewModel.setPostId(args.id)
 
         MarkdownTagAdapter(this).also { adapter ->
             binding.rvMarkdownTags.adapter = adapter

@@ -59,25 +59,27 @@ object AppModule {
 
     @Qualifier
     @Retention(AnnotationRetention.RUNTIME)
-    annotation class RemoteMessagingDataSource
+    annotation class RemoteNotificationDataSource
 
     @Singleton
-    @AppModule.RemoteMessagingDataSource
+    @AppModule.RemoteNotificationDataSource
     @Provides
-    fun provideMessagingRemoteDataSource(
-        firebaseMessaging: FirebaseMessaging
-    ): MessagingRemoteDataSource {
-        return MessagingRemoteDataSource(firebaseMessaging)
+    fun provideNotificationRemoteDataSource(
+        firebaseDatabase: FirebaseDatabase,
+        firebaseMessaging: FirebaseMessaging,
+        pushNotificationAPI: PushNotificationAPI,
+    ): NotificationRemoteDataSource {
+        return NotificationRemoteDataSource(firebaseDatabase, firebaseMessaging, pushNotificationAPI)
     }
 
     @Provides
     @Singleton
-    fun provideNotificationAPI(): NotificationAPI {
+    fun provideNotificationAPI(): PushNotificationAPI {
         return Retrofit.Builder()
             .baseUrl(Constant.FCM_BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-            .create(NotificationAPI::class.java)
+            .create(PushNotificationAPI::class.java)
     }
 
     @Singleton

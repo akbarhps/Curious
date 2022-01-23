@@ -9,7 +9,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.NavDeepLinkBuilder
 import com.charuniverse.curious.R
-import com.charuniverse.curious.data.model.NotificationData
+import com.charuniverse.curious.data.model.NotificationEvent
+import com.charuniverse.curious.data.model.PushNotificationData
 import com.charuniverse.curious.ui.MainActivity
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.messaging.FirebaseMessagingService
@@ -19,32 +20,31 @@ import kotlin.random.Random
 class MessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(message: RemoteMessage) {
-        val data = NotificationData.fromMap(message.data)
+        val data = PushNotificationData.fromMessagingData(message.data)
 
+        val eventDestination = NotificationEvent.getEventDestination(data.eventType)
         val pendingIntent = NavDeepLinkBuilder(this)
             .setComponentName(MainActivity::class.java)
             .setGraph(R.navigation.main_nav_graph)
-            .setDestination(R.id.postDetailFragment)
-            .setArguments(bundleOf("postId" to data.id))
+            .setDestination(eventDestination)
+            .setArguments(bundleOf("id" to data.eventId))
             .createPendingIntent()
 
+        val eventText = NotificationEvent.getEventValue(data.eventType)
         val notificationBuilder = NotificationCompat
             .Builder(this, "Curious")
-            .setContentTitle("${data.createdBy} ${data.eventValue} ${data.title}")
-            .setContentText(data.body)
+            .setContentTitle("@${data.senderUsername} $eventText")
+            .setContentText(data.eventTitle)
             .setAutoCancel(true)
             .setStyle(
                 NotificationCompat
                     .BigTextStyle()
-                    .bigText(data.body)
+                    .bigText(data.eventTitle)
             )
             .setContentIntent(pendingIntent)
 
-        if (data.event == NotificationData.EVENT_POST_LIKE) {
-            notificationBuilder.setSmallIcon(R.drawable.ic_baseline_favorite_24)
-        } else {
-            notificationBuilder.setSmallIcon(R.drawable.ic_baseline_comment_24)
-        }
+        val eventIcon = NotificationEvent.getEventIcon(data.eventType)
+        notificationBuilder.setSmallIcon(eventIcon)
 
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -65,8 +65,8 @@ class MessagingService : FirebaseMessagingService() {
     }
 
     override fun onNewToken(newToken: String) {
-        FirebaseDatabase.getInstance()
-            .reference.child("users/${Preferences.userId}/FCMToken")
+        FirebaseDatabase.getInstance().reference
+            .child("users/${Preferences.userId}/FCMToken")
             .setValue(newToken)
             .addOnFailureListener {
                 Log.e("MessagingService", "onNewToken: ${it.message}", it)

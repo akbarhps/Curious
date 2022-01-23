@@ -34,7 +34,7 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
 
-        viewModel.setPostId(args.postId)
+        viewModel.setPostId(args.id)
         binding = FragmentPostDetailBinding.bind(view).also {
             it.viewModel = viewModel
             it.commentList.adapter = PostCommentsAdapter(viewModel)
@@ -118,7 +118,7 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
 
     private fun openEditFragment() {
         val dest = PostDetailFragmentDirections
-            .actionPostDetailFragmentToPostCreateEditFragment(args.postId)
+            .actionPostDetailFragmentToPostCreateEditFragment(args.id)
         findNavController().navigate(dest)
     }
 
@@ -129,7 +129,7 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
 
     private fun openCreateEditCommentFragment(commentId: String? = null) {
         val dest = PostDetailFragmentDirections
-            .actionPostDetailFragmentToCommentCreateEditFragment(args.postId, commentId)
+            .actionPostDetailFragmentToCommentCreateEditFragment(args.id, commentId)
         findNavController().navigate(dest)
     }
 

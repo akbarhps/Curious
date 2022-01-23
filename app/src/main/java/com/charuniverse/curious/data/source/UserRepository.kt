@@ -3,7 +3,6 @@ package com.charuniverse.curious.data.source
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.model.User
 import com.charuniverse.curious.data.source.in_memory.InMemoryUserDataSource
-import com.charuniverse.curious.data.source.remote.MessagingRemoteDataSource
 import com.charuniverse.curious.data.source.remote.UserRemoteDataSource
 import kotlinx.coroutines.flow.*
 

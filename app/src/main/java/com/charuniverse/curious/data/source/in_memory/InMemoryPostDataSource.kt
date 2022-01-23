@@ -10,7 +10,12 @@ object InMemoryPostDataSource {
 
     private var posts = mutableMapOf<String, PostDetail>()
 
-    fun getAllAsList(): List<PostDetail> = posts.map { it.value }
+    fun getAllAsList(): List<PostDetail> = posts.map { (_, post) ->
+        if (post.author == null) {
+            post.author = InMemoryUserDataSource.getById(post.createdBy)
+        }
+        return@map post
+    }
 
     fun getByUserId(userId: String): List<PostDetail> =
         posts.filter { it.value.createdBy == userId }

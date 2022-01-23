@@ -3,22 +3,25 @@ package com.charuniverse.curious.data.source
 import android.util.Log
 import com.charuniverse.curious.data.Result
 import com.charuniverse.curious.data.dto.PostDetail
-import com.charuniverse.curious.data.model.NotificationData
+import com.charuniverse.curious.data.model.NotificationEvent
 import com.charuniverse.curious.data.model.Post
 import com.charuniverse.curious.data.model.User
 import com.charuniverse.curious.data.source.in_memory.InMemoryPostDataSource
 import com.charuniverse.curious.data.source.in_memory.InMemoryUserDataSource
-import com.charuniverse.curious.data.source.remote.NotificationAPI
+import com.charuniverse.curious.data.source.remote.NotificationRemoteDataSource
 import com.charuniverse.curious.data.source.remote.PostRemoteDataSource
 import com.charuniverse.curious.data.source.remote.UserRemoteDataSource
 import com.charuniverse.curious.util.NotificationBuilder
 import com.charuniverse.curious.util.Preferences
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
 class PostRepository(
     private val postRemoteDataSource: PostRemoteDataSource,
     private val userRemoteDataSource: UserRemoteDataSource,
-    private val notificationAPI: NotificationAPI,
+    private val notificationRemoteDataSource: NotificationRemoteDataSource,
 ) {
 
     private val inMemoryPost = InMemoryPostDataSource
@@ -58,6 +61,8 @@ class PostRepository(
     ): Flow<Result<List<PostDetail>>> = flow {
         if (!forceRefresh) {
             val posts = inMemoryPost.getAllAsList()
+                .map { handlePost(it)!! }
+
             if (posts.isNotEmpty()) {
                 return@flow emit(Result.Success(posts))
             }
@@ -84,6 +89,8 @@ class PostRepository(
     ): Flow<Result<List<PostDetail>>> = flow {
         if (!forceRefresh) {
             val posts = inMemoryPost.getByUserId(userId)
+                .map { handlePost(it)!! }
+
             if (posts.isNotEmpty()) {
                 return@flow emit(Result.Success(posts))
             }
@@ -106,7 +113,8 @@ class PostRepository(
         forceRefresh: Boolean = false
     ): Flow<Result<PostDetail>> = flow {
         if (!forceRefresh) {
-            val post = inMemoryPost.getById(postId)
+            var post = inMemoryPost.getById(postId)
+            post = handlePost(post)
             if (post != null) {
                 return@flow emit(Result.Success(post))
             }
@@ -176,20 +184,24 @@ class PostRepository(
             inMemoryPost.togglePostLove(postId, isUserCurrentlyLovePost)
 
             emit(Result.Success(Unit))
-            if (isUserCurrentlyLovePost) return@flow
         } catch (e: Exception) {
             emit(Result.Error(e))
         }
 
-        try {
-            val notification = NotificationBuilder.build(
-                postId,
-                NotificationData.EVENT_POST_LIKE
-            ) ?: return@flow
+        sendNotification(postId)
+    }
 
-            notificationAPI.send(notification)
+    private fun sendNotification(postId: String) = CoroutineScope(Dispatchers.IO).launch {
+        val eventType = NotificationEvent.POST_LOVE
+
+        val notification = NotificationBuilder
+            .postNotification(postId, eventType)
+            ?: return@launch
+
+        try {
+            notificationRemoteDataSource.create(notification)
         } catch (e: Exception) {
-            Log.e("PostRepository", "toggleLove: ${e.message}", e)
+            Log.e("Notifications", "sendNotification: ${e.message}", e)
         }
     }
 }
