@@ -54,7 +54,7 @@
     <fragment
         android:id="@+id/postFeedFragment"
         android:name="com.charuniverse.curious.ui.post.feed.PostFeedFragment"
-        android:label="Feed">
+        android:label="Explore">
         <action
             android:id="@+id/action_postFeedFragment_to_postDetailFragment"
             app:destination="@id/postDetailFragment" />

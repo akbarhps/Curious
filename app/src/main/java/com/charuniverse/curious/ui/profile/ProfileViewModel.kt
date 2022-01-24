@@ -36,8 +36,6 @@ class ProfileViewModel @Inject constructor(
         isLoading: Boolean = false,
         isLoggedOut: Boolean = false,
         error: Exception? = null,
-        user: User? = null,
-        userPosts: List<PostDetail>? = null,
         selectedPostId: String? = null,
     ) {
         _viewState.value = Event(
@@ -45,35 +43,44 @@ class ProfileViewModel @Inject constructor(
                 isLoading = isLoading,
                 error = error,
                 isLoggedOut = isLoggedOut,
-                user = user,
-                userPosts = userPosts,
                 selectedPostId = selectedPostId,
             )
         )
     }
 
+    private val _user = MutableLiveData<User>()
+    val user: LiveData<User> = _user
+
+    private val _userPosts = MutableLiveData<List<PostDetail>>()
+    val userPosts: LiveData<List<PostDetail>> = _userPosts
+
     private lateinit var currentUserId: String
 
     fun setUserId(userId: String) {
         currentUserId = userId
-        refreshUser()
+        refresh(false)
     }
 
-    fun refreshUser(
-        forceRefresh: Boolean = false,
-        refreshPost: Boolean = false
-    ) = viewModelScope.launch {
+    fun refresh(forceRefresh: Boolean) {
+        refreshUser(forceRefresh)
+        refreshUserPost(forceRefresh)
+    }
+
+    private fun refreshUser(forceRefresh: Boolean = false) = viewModelScope.launch {
         userRepository.getById(currentUserId, forceRefresh).collect { res ->
             resultHandler(res) {
-                updateViewState(user = it)
-                if (refreshPost) refreshUserPost(true)
+                _user.value = it
+                updateViewState()
             }
         }
     }
 
     private fun refreshUserPost(forceRefresh: Boolean = false) = viewModelScope.launch {
         postRepository.observeUserPosts(currentUserId, forceRefresh).collect { res ->
-            resultHandler(res) { updateViewState(userPosts = it) }
+            resultHandler(res) { posts ->
+                _userPosts.value = posts.sortedByDescending { it.createdAt }
+                updateViewState()
+            }
         }
     }
 
@@ -103,5 +110,4 @@ class ProfileViewModel @Inject constructor(
             is Result.Success -> onSuccess(result.data)
         }
     }
-
 }

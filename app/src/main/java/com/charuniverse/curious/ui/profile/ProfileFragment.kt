@@ -39,9 +39,21 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         binding.let {
             it.postList.adapter = UserPostAdapter(viewModel)
             it.swipeLayout.setOnRefreshListener {
-                viewModel.refreshUser(true, true)
+                viewModel.refresh(true)
             }
         }
+
+        viewModel.user.observe(viewLifecycleOwner, {
+            binding.user = it
+        })
+
+        viewModel.userPosts.observe(viewLifecycleOwner, { posts ->
+            (binding.postList.adapter as UserPostAdapter).let {
+                it.submitList(posts)
+                // TODO: find better way to refresh data
+                it.notifyDataSetChanged()
+            }
+        })
 
         setupEventObserver()
     }
@@ -58,21 +70,8 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 openPostDetailFragment(it)
             }
 
-            state.user?.let {
-                binding.user = it
-            }
-
-            state.userPosts?.let { posts ->
-                (binding.postList.adapter as UserPostAdapter).let {
-                    it.submitList(posts)
-                    // TODO: find better way to refresh data
-                    it.notifyDataSetChanged()
-                }
-            }
-
             if (state.isLoggedOut) {
-                val dest = ProfileFragmentDirections.actionProfileFragmentToLoginFragment()
-                findNavController().navigate(dest)
+                openLoginFragment()
             }
         })
     }
@@ -93,6 +92,12 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             }
             else -> false
         }
+    }
+
+    private fun openLoginFragment() {
+        val dest = ProfileFragmentDirections
+            .actionProfileFragmentToLoginFragment()
+        findNavController().navigate(dest)
     }
 
     private fun openPostDetailFragment(postId: String) {
