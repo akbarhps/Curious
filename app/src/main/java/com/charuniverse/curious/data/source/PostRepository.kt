@@ -65,8 +65,6 @@ class PostRepository(
     ): Flow<Result<List<PostDetail>>> = flow {
         if (!forceRefresh) {
             val posts = inMemoryPost.getAllAsList()
-                .map { handlePost(it)!! }
-
             if (posts.isNotEmpty()) {
                 return@flow emit(Result.Success(posts))
             }
@@ -93,8 +91,6 @@ class PostRepository(
     ): Flow<Result<List<PostDetail>>> = flow {
         if (!forceRefresh) {
             val posts = inMemoryPost.getByUserId(userId)
-                .map { handlePost(it)!! }
-
             if (posts.isNotEmpty()) {
                 return@flow emit(Result.Success(posts))
             }
@@ -117,8 +113,7 @@ class PostRepository(
         forceRefresh: Boolean = false
     ): Flow<Result<PostDetail>> = flow {
         if (!forceRefresh) {
-            var post = inMemoryPost.getById(postId)
-            post = handlePost(post)
+            val post = inMemoryPost.getById(postId)
             if (post != null) {
                 return@flow emit(Result.Success(post))
             }

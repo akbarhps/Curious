@@ -14,7 +14,6 @@ object Markdown {
         NUMBERED_LIST,
         QUOTE,
         CODE_BLOCK,
-//        LATEX_BLOCK,
     }
 
     data class Element(
@@ -49,8 +48,8 @@ object Markdown {
         ),
         Element(
             tag = Tag.LINK,
-            prefix = "",
-            suffix = "",
+            prefix = "[",
+            suffix = "]()",
             icon = R.drawable.ic_baseline_link_24,
             tooltipText = "Link",
         ),
@@ -89,12 +88,5 @@ object Markdown {
             icon = R.drawable.ic_baseline_code_24,
             tooltipText = "Code Block",
         ),
-//        Element(
-//            tag = Tag.LATEX_BLOCK,
-//            prefix = "$$$\n",
-//            suffix = "\n$$$\n",
-//            icon = R.drawable.ic_baseline_functions_24,
-//            tooltipText = "Latex Block",
-//        ),
     )
 }

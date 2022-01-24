@@ -21,17 +21,16 @@ class PostFeedFragment : Fragment(R.layout.fragment_post_feed) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding = FragmentPostFeedBinding.bind(view).also {
+        FragmentPostFeedBinding.bind(view).also {
+            binding = it
             it.viewModel = viewModel
             it.postList.adapter = PostFeedAdapter(viewModel)
         }
 
         binding.fabCreatePost.setOnClickListener {
-            val dest = PostFeedFragmentDirections.actionPostFeedFragmentToPostCreateEditFragment()
-            findNavController().navigate(dest)
+            openCreatePostFragment()
         }
 
-        // TODO: Refactor
         viewModel.posts.observe(viewLifecycleOwner, { posts ->
             (binding.postList.adapter as PostFeedAdapter).let {
                 it.submitList(posts)
@@ -47,16 +46,25 @@ class PostFeedFragment : Fragment(R.layout.fragment_post_feed) {
         viewModel.viewState.observe(viewLifecycleOwner, EventObserver { state ->
             binding.swipeLayout.isRefreshing = state.isLoading
 
-            state.selectedPostId?.let {
-                val dest = PostFeedFragmentDirections
-                    .actionPostFeedFragmentToPostDetailFragment(it)
-                findNavController().navigate(dest)
-            }
-
             state.error?.let {
                 Toast.makeText(requireContext(), it.message, Toast.LENGTH_SHORT).show()
             }
+
+            state.selectedPostId?.let {
+                openPostDetailFragment(it)
+            }
         })
+    }
+
+    private fun openPostDetailFragment(it: String) {
+        val dest = PostFeedFragmentDirections
+            .actionPostFeedFragmentToPostDetailFragment(it)
+        findNavController().navigate(dest)
+    }
+
+    private fun openCreatePostFragment() {
+        val dest = PostFeedFragmentDirections.actionPostFeedFragmentToPostCreateEditFragment()
+        findNavController().navigate(dest)
     }
 
     override fun onResume() {
