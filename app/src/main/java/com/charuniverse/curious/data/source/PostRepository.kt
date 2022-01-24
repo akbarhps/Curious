@@ -46,8 +46,12 @@ class PostRepository(
         it.author = getUserById(it.createdBy)
         it.comments.map { (_, comment) ->
             comment.author = getUserById(comment.createdBy)
+            comment.loveCount = comment.lovers.values.size.toLong()
             comment.isViewerLoved = comment.lovers.containsKey(viewerUID)
         }
+
+        it.loveCount = it.lovers.values.size.toLong()
+        it.commentCount = it.comments.values.size.toLong()
 
         it.isViewerLoved = it.lovers.containsKey(viewerUID)
         inMemoryPost.add(it)

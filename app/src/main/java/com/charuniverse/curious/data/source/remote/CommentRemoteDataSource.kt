@@ -21,12 +21,10 @@ class CommentRemoteDataSource(
     }
 
     suspend fun create(comment: Comment) {
-        val updates: MutableMap<String, Any> = HashMap()
-
-        updates["${comment.postId}/comments/${comment.id}"] = comment
-        updates["${comment.postId}/commentCount"] = ServerValue.increment(1)
-
-        postRef.updateChildren(updates).await()
+        postRef
+            .child("${comment.postId}/comments/${comment.id}")
+            .setValue(comment)
+            .await()
     }
 
     suspend fun update(comment: Comment) {
@@ -40,12 +38,10 @@ class CommentRemoteDataSource(
     }
 
     suspend fun delete(postId: String, commentId: String) {
-        val updates: MutableMap<String, Any?> = HashMap()
-
-        updates["${postId}/comments/${commentId}"] = null
-        updates["${postId}/commentCount"] = ServerValue.increment(-1)
-
-        postRef.updateChildren(updates).await()
+        postRef
+            .child("${postId}/comments/${commentId}")
+            .setValue(null)
+            .await()
     }
 
     suspend fun toggleLove(postId: String, commentId: String, hasLove: Boolean) {
@@ -54,10 +50,8 @@ class CommentRemoteDataSource(
 
         if (!hasLove) {
             updates["${postId}/comments/${commentId}/lovers/${uid}"] = System.currentTimeMillis()
-            updates["${postId}/comments/${commentId}/loveCount"] = ServerValue.increment(1)
         } else {
             updates["${postId}/comments/${commentId}/lovers/${uid}"] = null
-            updates["${postId}/comments/${commentId}/loveCount"] = ServerValue.increment(-1)
         }
 
         postRef.updateChildren(updates).await()

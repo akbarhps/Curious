@@ -63,10 +63,8 @@ class PostRemoteDataSource(
         val updates: MutableMap<String, Any?> = HashMap()
         if (!hasLike) {
             updates["$postId/lovers/$uid"] = System.currentTimeMillis()
-            updates["$postId/loveCount"] = ServerValue.increment(1)
         } else {
             updates["$postId/lovers/$uid"] = null
-            updates["$postId/loveCount"] = ServerValue.increment(-1)
         }
 
         postRef.updateChildren(updates).await()
