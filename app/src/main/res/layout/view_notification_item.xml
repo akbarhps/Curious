@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
@@ -59,6 +60,7 @@
                 app:layout_constraintStart_toEndOf="@+id/imageView" />
 
             <ImageView
+                android:id="@+id/imageView3"
                 android:layout_width="16dp"
                 android:layout_height="match_parent"
                 android:layout_marginStart="8dp"
@@ -66,6 +68,15 @@
                 android:tooltipText="Verified User"
                 android:visibility="@{notification.author.verified ? View.VISIBLE : View.GONE}"
                 app:layout_constraintStart_toEndOf="@+id/textView6" />
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_baseline_moderator_24"
+                android:tooltipText="Moderator"
+                android:visibility="@{notification.author.moderator ? View.VISIBLE : View.GONE}"
+                app:layout_constraintStart_toEndOf="@+id/imageView3" />
 
             <TextView
                 android:id="@+id/textView3"

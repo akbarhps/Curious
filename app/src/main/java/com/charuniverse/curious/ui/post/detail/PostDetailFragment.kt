@@ -10,6 +10,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.charuniverse.curious.R
+import com.charuniverse.curious.data.source.in_memory.InMemoryUserDataSource
 import com.charuniverse.curious.databinding.FragmentPostDetailBinding
 import com.charuniverse.curious.util.EventObserver
 import com.charuniverse.curious.util.Preferences
@@ -29,6 +30,10 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
     private lateinit var binding: FragmentPostDetailBinding
 
     private var isViewerAuthor: Boolean? = null
+
+    //TODO: Refactor
+    private val isViewerModerator: Boolean = InMemoryUserDataSource
+        .getById(Preferences.userId)?.isModerator ?: false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -87,7 +92,7 @@ class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
                 .setIcon(R.drawable.ic_baseline_add_comment_24)
                 .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
 
-            if (isViewerAuthor!!) {
+            if (isViewerAuthor!! || isViewerModerator) {
                 menu.add(0, MENU_EDIT_POST, Menu.NONE, "Edit Post")
                     .setIcon(R.drawable.ic_baseline_edit_24)
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER)

@@ -60,6 +60,13 @@
                 android:tooltipText="Verified User"
                 android:visibility="@{post.author.verified ? View.VISIBLE : View.GONE}" />
 
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_baseline_moderator_24"
+                android:tooltipText="Moderator"
+                android:visibility="@{post.author.moderator ? View.VISIBLE : View.GONE}" />
+
         </LinearLayout>
 
         <TextView

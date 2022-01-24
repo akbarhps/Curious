@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.charuniverse.curious.R
 import com.charuniverse.curious.data.dto.CommentDetail
+import com.charuniverse.curious.data.source.in_memory.InMemoryUserDataSource
 import com.charuniverse.curious.databinding.ViewPostCommentItemBinding
 import com.charuniverse.curious.util.Preferences
 
@@ -39,8 +40,13 @@ class PostCommentsAdapter(private val viewModel: PostDetailViewModel) :
             this.comment = comment
             this.viewModel = viewModel
 
+            //TODO: Refactor
+            val isViewerModerator: Boolean = InMemoryUserDataSource
+                .getById(Preferences.userId)?.isModerator ?: false
+
             ivOpenCommentMenu.apply {
-                visibility = if (comment.createdBy == Preferences.userId) View.VISIBLE else View.GONE
+                visibility =
+                    if (comment.createdBy == Preferences.userId || isViewerModerator) View.VISIBLE else View.GONE
 
                 setOnClickListener {
                     val menu = PopupMenu(it.context, it)
