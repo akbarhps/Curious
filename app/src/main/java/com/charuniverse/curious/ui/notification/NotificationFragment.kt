@@ -20,20 +20,23 @@ class NotificationFragment : Fragment(R.layout.fragment_notification) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding = FragmentNotificationBinding.bind(view)
-
-        binding.notifications.adapter = NotificationAdapter(viewModel)
-
-        binding.swipeLayout.setOnRefreshListener {
-            viewModel.refresh()
+        FragmentNotificationBinding.bind(view).let {
+            binding = it
+            it.notifications.adapter = NotificationAdapter(viewModel)
+            it.swipeLayout.setOnRefreshListener {
+                viewModel.refresh(true)
+            }
         }
 
-        // TODO: Refactor
         viewModel.notifications.observe(viewLifecycleOwner, {
             (binding.notifications.adapter as NotificationAdapter)
                 .submitList(it)
         })
 
+        setupEventObserver()
+    }
+
+    private fun setupEventObserver() {
         viewModel.viewState.observe(viewLifecycleOwner, EventObserver { state ->
             binding.swipeLayout.isRefreshing = state.isLoading
 

@@ -72,12 +72,11 @@ object InMemoryPostDataSource {
 
             if (!hasLove) {
                 comment.lovers[uid] = System.currentTimeMillis()
-                comment.loveCount++
             } else {
                 comment.lovers.remove(uid)
-                comment.loveCount--
             }
 
+            comment.loveCount = comment.lovers.values.size.toLong()
             comment.isViewerLoved = !hasLove
             it.comments[commentId] = comment
         }

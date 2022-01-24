@@ -44,11 +44,11 @@ class NotificationViewModel @Inject constructor(
     val notifications: LiveData<List<NotificationDetail>> = _notifications
 
     init {
-        refresh()
+        refresh(false)
     }
 
-    fun refresh() = viewModelScope.launch {
-        notificationRepository.getByUserId().collect { res ->
+    fun refresh(forceRefresh: Boolean = false) = viewModelScope.launch {
+        notificationRepository.getByUserId(forceRefresh).collect { res ->
             resultHandler(res) {
                 updateViewState(isLoading = false)
                 _notifications.value = it
